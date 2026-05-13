@@ -1,0 +1,15 @@
+Automated X-ray Validation Module � Evaluation Report
+|  Script v4.0
+Overall Accuracy: 87.26%
+
+              precision    recall  f1-score   support
+
+   0_Correct     0.8663    0.8713    0.8688       171
+ 1_Rotate_90     0.8011    0.8529    0.8262       170
+2_Rotate_180     0.8655    0.8655    0.8655       171
+3_Rotate_270     0.8385    0.7895    0.8133       171
+4_Non_Dental     1.0000    0.9879    0.9939       165
+
+    accuracy                         0.8726       848
+   macro avg     0.8743    0.8734    0.8735       848
+weighted avg     0.8735    0.8726    0.8727       848
