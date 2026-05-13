@@ -12,9 +12,12 @@ member3-comparison — Ruchira's work (History Comparison)
 member4-healthcare — Apsara's work (Personalized Risk assessment and care plan)
 
 
+
 Function Explanation 
 
+
 Intelligent Teeth Alignment Comparison and Progress Tracking Module (IT22278630- Member 3)
+
 
 The Intelligent Teeth Alignment Comparison and Progress Tracking Module is a central component of the proposed AI-Based Intelligent Dental Diagnosis and Personalized Care System. This module monitors structural teeth alignment over time, recognizing its profound impact on oral hygiene, structural health, and functional ability.
 
