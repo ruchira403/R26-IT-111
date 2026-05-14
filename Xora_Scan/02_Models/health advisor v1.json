@@ -1,0 +1,437 @@
+{
+  "name": "health advisor v1",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "research_webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        32
+      ],
+      "id": "3237e945-7ae3-4294-9b25-f589e6bd42e9",
+      "name": "Webhook",
+      "webhookId": "30512565-446c-4bc1-b739-7fa693d96097"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json.body ?? $json;\n\nconst errors = [];\n\nconst requiredFields = [\n  \"age\",\n  \"number_of_teeth\",\n  \"number_of_missing_teeth\",\n  \"is_primary_teeth\",\n  \"smoking_status\",\n  \"alcohol_usage\",\n  \"sugar_usage\",\n  \"brushing_frequency\",\n  \"diabetes_status\",\n  \"pregnancy_status\",\n  \"gum_bleeding\",\n  \"tooth_sensitivity\",\n  \"calcium_or_vitamin_deficiency\",\n  \"number_of_filled_teeth\",\n  \"overall_oral_hygiene_level\",\n  \"identified_disease\",\n  \"disease_severity_from_xray\",\n  \"affected_teeth_count\",\n  \"preferred_language\"\n];\n\nfor (const field of requiredFields) {\n  if (input[field] === undefined || input[field] === null || input[field] === \"\") {\n    errors.push(`${field} is required`);\n  }\n}\n\nconst allowedRiskValues = [\"no\", \"medium\", \"high\"];\nconst allowedHygiene = [\"good\", \"moderate\", \"poor\"];\nconst allowedDisease = [\"dental_cavity\", \"periodontal_bone_loss\"];\nconst allowedSeverity = [\"mild\", \"moderate\", \"severe\"];\nconst allowedLanguages = [\"en\", \"si\", \"ta\", \"hi\"];\n\nfunction isBoolean(value) {\n  return typeof value === \"boolean\";\n}\n\nfunction isInteger(value) {\n  return Number.isInteger(value);\n}\n\nif (!isInteger(input.age) || input.age < 1 || input.age > 120) {\n  errors.push(\"age must be an integer between 1 and 120\");\n}\n\nif (!isInteger(input.number_of_teeth) || input.number_of_teeth < 0 || input.number_of_teeth > 32) {\n  errors.push(\"number_of_teeth must be an integer between 0 and 32\");\n}\n\nif (!isInteger(input.number_of_missing_teeth) || input.number_of_missing_teeth < 0 || input.number_of_missing_teeth > 32) {\n  errors.push(\"number_of_missing_teeth must be an integer between 0 and 32\");\n}\n\nif ((input.number_of_teeth + input.number_of_missing_teeth) > 32) {\n  errors.push(\"number_of_teeth + number_of_missing_teeth must be less than or equal to 32\");\n}\n\nif (!isInteger(input.brushing_frequency) || ![0, 1, 2].includes(input.brushing_frequency)) {\n  errors.push(\"brushing_frequency must be 0, 1, or 2\");\n}\n\nif (!isInteger(input.number_of_filled_teeth) || input.number_of_filled_teeth < 0 || input.number_of_filled_teeth > 32) {\n  errors.push(\"number_of_filled_teeth must be an integer between 0 and 32\");\n}\n\nif (input.number_of_filled_teeth > input.number_of_teeth) {\n  errors.push(\"number_of_filled_teeth must be less than or equal to number_of_teeth\");\n}\n\nif (!isInteger(input.affected_teeth_count) || input.affected_teeth_count < 0 || input.affected_teeth_count > 32) {\n  errors.push(\"affected_teeth_count must be an integer between 0 and 32\");\n}\n\nif (input.affected_teeth_count > input.number_of_teeth) {\n  errors.push(\"affected_teeth_count must be less than or equal to number_of_teeth\");\n}\n\nfor (const field of [\n  \"is_primary_teeth\",\n  \"diabetes_status\",\n  \"pregnancy_status\",\n  \"gum_bleeding\",\n  \"tooth_sensitivity\",\n  \"calcium_or_vitamin_deficiency\"\n]) {\n  if (!isBoolean(input[field])) {\n    errors.push(`${field} must be boolean true or false`);\n  }\n}\n\nfor (const field of [\"smoking_status\", \"alcohol_usage\", \"sugar_usage\"]) {\n  if (!allowedRiskValues.includes(String(input[field]).toLowerCase())) {\n    errors.push(`${field} must be one of: no, medium, high`);\n  }\n}\n\nif (!allowedHygiene.includes(String(input.overall_oral_hygiene_level).toLowerCase())) {\n  errors.push(\"overall_oral_hygiene_level must be one of: good, moderate, poor\");\n}\n\nif (!allowedDisease.includes(String(input.identified_disease).toLowerCase())) {\n  errors.push(\"identified_disease must be dental_cavity or periodontal_bone_loss\");\n}\n\nif (!allowedSeverity.includes(String(input.disease_severity_from_xray).toLowerCase())) {\n  errors.push(\"disease_severity_from_xray must be mild, moderate, or severe\");\n}\n\nif (!allowedLanguages.includes(String(input.preferred_language).toLowerCase())) {\n  errors.push(\"preferred_language must be one of: en, si, ta, hi\");\n}\n\nif (errors.length > 0) {\n  return [\n    {\n      json: {\n        valid: false,\n        errors,\n        received_body: input\n      }\n    }\n  ];\n}\n\nreturn [\n  {\n    json: {\n      valid: true,\n      health_profile: {\n        ...input,\n        smoking_status: String(input.smoking_status).toLowerCase(),\n        alcohol_usage: String(input.alcohol_usage).toLowerCase(),\n        sugar_usage: String(input.sugar_usage).toLowerCase(),\n        overall_oral_hygiene_level: String(input.overall_oral_hygiene_level).toLowerCase(),\n        identified_disease: String(input.identified_disease).toLowerCase(),\n        disease_severity_from_xray: String(input.disease_severity_from_xray).toLowerCase(),\n        preferred_language: String(input.preferred_language).toLowerCase()\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        304
+      ],
+      "id": "435c3036-5f7c-444d-a7f6-2cfac6afba8f",
+      "name": "Validate Webhook Body"
+    },
+    {
+      "parameters": {
+        "jsCode": "const profile = $json.health_profile;\n\nfunction normalizeText(value) {\n  return String(value).trim().toLowerCase();\n}\n\nfunction normalizeRiskValue(value) {\n  const v = normalizeText(value);\n\n  if ([\"no\", \"none\", \"false\", \"0\", \"never\"].includes(v)) return \"no\";\n  if ([\"medium\", \"moderate\", \"yes\", \"true\", \"1\", \"occasional\"].includes(v)) return \"medium\";\n  if ([\"high\", \"heavy\", \"frequent\"].includes(v)) return \"high\";\n\n  return v;\n}\n\nfunction normalizeBoolean(value) {\n  if (typeof value === \"boolean\") return value;\n\n  const v = normalizeText(value);\n\n  if ([\"true\", \"yes\", \"1\"].includes(v)) return true;\n  if ([\"false\", \"no\", \"0\"].includes(v)) return false;\n\n  return Boolean(value);\n}\n\nfunction normalizeDisease(value) {\n  const v = normalizeText(value);\n\n  if ([\"dental cavity\", \"cavity\", \"caries\", \"dental_caries\"].includes(v)) {\n    return \"dental_cavity\";\n  }\n\n  if ([\"periodontal bone loss\", \"periodontal\", \"gum disease\", \"bone_loss\"].includes(v)) {\n    return \"periodontal_bone_loss\";\n  }\n\n  return v;\n}\n\nconst normalized = {\n  age: Number(profile.age),\n  number_of_teeth: Number(profile.number_of_teeth),\n  number_of_missing_teeth: Number(profile.number_of_missing_teeth),\n  is_primary_teeth: normalizeBoolean(profile.is_primary_teeth),\n\n  smoking_status: normalizeRiskValue(profile.smoking_status),\n  alcohol_usage: normalizeRiskValue(profile.alcohol_usage),\n  sugar_usage: normalizeRiskValue(profile.sugar_usage),\n\n  brushing_frequency: Number(profile.brushing_frequency),\n\n  diabetes_status: normalizeBoolean(profile.diabetes_status),\n  pregnancy_status: normalizeBoolean(profile.pregnancy_status),\n  gum_bleeding: normalizeBoolean(profile.gum_bleeding),\n  tooth_sensitivity: normalizeBoolean(profile.tooth_sensitivity),\n  calcium_or_vitamin_deficiency: normalizeBoolean(profile.calcium_or_vitamin_deficiency),\n\n  number_of_filled_teeth: Number(profile.number_of_filled_teeth),\n  overall_oral_hygiene_level: normalizeText(profile.overall_oral_hygiene_level),\n\n  identified_disease: normalizeDisease(profile.identified_disease),\n  disease_severity_from_xray: normalizeText(profile.disease_severity_from_xray),\n\n  affected_teeth_count: Number(profile.affected_teeth_count),\n  preferred_language: normalizeText(profile.preferred_language)\n};\n\nreturn [\n  {\n    json: {\n      health_profile: normalized\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        272
+      ],
+      "id": "5091bbed-dff9-4f08-88e8-370a071ce385",
+      "name": "Normalize Health Profile Values"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"age\": \"={{ $json.health_profile.age }}\",\n  \"number_of_teeth\": \"={{ $json.health_profile.number_of_teeth }}\",\n  \"number_of_missing_teeth\": \"={{ $json.health_profile.number_of_missing_teeth }}\",\n  \"is_primary_teeth\": \"={{ $json.health_profile.is_primary_teeth }}\",\n  \"smoking_status\": \"={{ $json.health_profile.smoking_status }}\",\n  \"alcohol_usage\": \"={{ $json.health_profile.alcohol_usage }}\",\n  \"sugar_usage\": \"={{ $json.health_profile.sugar_usage }}\",\n  \"brushing_frequency\": \"={{ $json.health_profile.brushing_frequency }}\",\n  \"diabetes_status\": \"={{ $json.health_profile.diabetes_status }}\",\n  \"pregnancy_status\": \"={{ $json.health_profile.pregnancy_status }}\",\n  \"gum_bleeding\": \"={{ $json.health_profile.gum_bleeding }}\",\n  \"tooth_sensitivity\": \"={{ $json.health_profile.tooth_sensitivity }}\",\n  \"calcium_or_vitamin_deficiency\": \"={{ $json.health_profile.calcium_or_vitamin_deficiency }}\",\n  \"number_of_filled_teeth\": \"={{ $json.health_profile.number_of_filled_teeth }}\",\n  \"overall_oral_hygiene_level\": \"={{ $json.health_profile.overall_oral_hygiene_level }}\",\n  \"identified_disease\": \"={{ $json.health_profile.identified_disease }}\",\n  \"disease_severity_from_xray\": \"={{ $json.health_profile.disease_severity_from_xray }}\",\n  \"affected_teeth_count\": \"={{ $json.health_profile.affected_teeth_count }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -544
+      ],
+      "id": "69a8cc48-92a3-43a2-b565-22ca53d2d646",
+      "name": "Prepare FastAPI Prediction Payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e0ded676-80fc-4bbe-936a-ab6cc79ea19b",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        256,
+        -64
+      ],
+      "id": "a5b3adce-c5ed-4681-93a2-f3a646f9ce88",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://web-production-d2979.up.railway.app/predict-risk",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        848,
+        64
+      ],
+      "id": "b09d450a-3f9a-4854-99c6-d0f1e84e3f87",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json;\n\nconst errors = [];\n\n// Handle HTTP request failure\nif (response.error) {\n  errors.push(`FastAPI request failed: ${response.error.message || \"Unknown error\"}`);\n}\n\n// Validate required top-level fields\nif (response.risk_score === undefined || response.risk_score === null) {\n  errors.push(\"Missing risk_score\");\n}\n\nif (!response.risk_level) {\n  errors.push(\"Missing risk_level\");\n}\n\nif (!response.care_plan || typeof response.care_plan !== \"object\") {\n  errors.push(\"Missing or invalid care_plan\");\n}\n\n// Validate risk level values\nconst allowedRiskLevels = [\"low\", \"medium\", \"high\"];\n\nif (\n  response.risk_level &&\n  !allowedRiskLevels.includes(String(response.risk_level).toLowerCase())\n) {\n  errors.push(\"Invalid risk_level value\");\n}\n\n// Validate risk score range\nif (\n  typeof response.risk_score === \"number\" &&\n  (response.risk_score < 0 || response.risk_score > 100)\n) {\n  errors.push(\"risk_score must be between 0 and 100\");\n}\n\n// Required care plan keys\nconst requiredCarePlanKeys = [\n  \"toothpaste_type\",\n  \"mouthwash_type\",\n  \"interdental_tool\",\n  \"rinse_type\",\n  \"pain_relief\",\n  \"dietary_action\",\n  \"dentist_urgency\",\n  \"monitoring_focus\",\n  \"lifestyle_action\"\n];\n\nif (response.care_plan) {\n  for (const key of requiredCarePlanKeys) {\n    if (\n      response.care_plan[key] === undefined ||\n      response.care_plan[key] === null\n    ) {\n      errors.push(`Missing care_plan.${key}`);\n    }\n  }\n}\n\n// Return result\nif (errors.length > 0) {\n  return [\n    {\n      json: {\n        valid_prediction: false,\n        prediction_errors: errors,\n        raw_response: response\n      }\n    }\n  ];\n}\n\nreturn [\n  {\n    json: {\n      valid_prediction: true,\n      model_output: response\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        288
+      ],
+      "id": "34987df3-4fa0-47fb-9c11-54eafbdcfcc0",
+      "name": "Validate FastAPI Model Output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e6dec982-27f3-4f71-81aa-21a54b7ab0ca",
+              "leftValue": "={{ $json.valid_prediction }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1200,
+        64
+      ],
+      "id": "b20f9726-bb1a-4c49-8357-f96c95fd1cf5",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const profile = $('Normalize Health Profile Values').first().json.health_profile;\nconst modelOutput = $json.model_output;\n\nreturn [\n  {\n    json: {\n      ai_context: {\n        preferred_language: profile.preferred_language || \"en\",\n        health_profile: profile,\n        model_output: modelOutput\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        -176
+      ],
+      "id": "f7cf2fb8-a05c-41ba-845a-96ecdbf2cefa",
+      "name": "Build AI Context"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a detailed dental risk assessment and care plan report using the following input.\nPreferred Language:\n{{ $json.ai_context.preferred_language }}\nGenerate patient-facing report text in the preferred language.\nKeep JSON keys and enum values in English.\nDo not translate model_output values.\nTranslate only risk_report, care_plan_report text fields, and ethical_considerations.\nHealth Profile:\n{{ JSON.stringify($json.ai_context.health_profile) }}\n\nModel Output:\n{{ JSON.stringify($json.ai_context.model_output) }}\n\nCare Plan Label Meanings:\n\ntoothpaste_type:\n- standard-fluoride: routine prevention\n- high-fluoride: elevated decay risk\n- desensitising-fluoride: sensitivity present\n- tartar-control-fluoride: tartar or gum disease focus\n\nmouthwash_type:\n- none: no mouthwash needed\n- fluoride-rinse: decay prevention support\n- antibacterial: mild gum-related support\n- antiseptic-chlorhexidine: stronger gum or periodontal support\n\ninterdental_tool:\n- none: not required\n- floss-only: standard cleaning between teeth\n- interdental-brush-only: wider gaps, gum recession, or periodontal cleaning support\n- both: severe plaque or multiple problem areas\n\nrinse_type:\n- none: no additional rinse suggested\n- salt-water: general soothing and healing support\n- chlorhexidine-rinse: stronger antimicrobial-style supportive rinse\n- hydrogen-peroxide-rinse: mild antibacterial or stain-control supportive rinse\n\npain_relief:\n- none: no pain relief support suggested\n- paracetamol-type: mild temporary pain support\n- nsaid-type: moderate temporary pain or inflammation support\n- nsaid-plus-topical: moderate temporary pain support plus localized discomfort support\n- topical-anaesthetic: localized acute discomfort support\n\ndietary_action:\n- no-change: no major dietary change suggested\n- reduce-sugar: reduce sugar exposure because of cavity/decay concern\n- reduce-acid: reduce acidic food/drink exposure because of erosion concern\n- reduce-sugar-and-acid: reduce both sugar and acidic exposure\n\ndentist_urgency:\n- 6-months: routine monitoring\n- 3-months: mild concern\n- 4-weeks: moderate concern\n- 2-weeks: urgent but not emergency\n- 1-week: near-urgent professional dental attention\n\nmonitoring_focus:\n- routine: routine observation\n- sensitivity: monitor tooth sensitivity\n- bleeding: monitor gum bleeding\n- pain-and-swelling: monitor pain and swelling\n- multiple-symptoms: monitor several active symptoms together\n\nlifestyle_action:\n- none: no lifestyle change suggested\n- smoking-reduction: smoking is a risk driver\n- alcohol-reduction: alcohol is a risk driver\n- both-smoking-and-alcohol: both smoking and alcohol are risk drivers\n\nPost-validation rules:\n1. If smoking_status is \"no\" but lifestyle_action includes smoking, add an inconsistency.\n2. If alcohol_usage is \"no\" but lifestyle_action includes alcohol, add an inconsistency.\n3. If pregnancy_status is true and pain_relief includes \"nsaid\", add a high-severity safety note.\n4. If identified_disease is \"dental_cavity\", explain the risk mainly using cavity-related factors such as sugar usage, brushing frequency, tooth sensitivity, X-ray severity, affected teeth count, and fluoride support.\n5. If identified_disease is \"periodontal_bone_loss\", explain the risk mainly using gum-related factors such as gum bleeding, missing teeth, diabetes, smoking, oral hygiene, interdental cleaning, and dentist follow-up.\n6. If disease_severity_from_xray is \"severe\" and dentist_urgency is \"6-months\" or \"3-months\", add an urgency inconsistency.\n7. If risk_score is above 80 and risk_level is not \"high\", add a score-level mismatch.\n8. If risk_score is below 40 and risk_level is \"high\", add a score-level mismatch.\n9. If age is below 12 and is_primary_teeth is true, explain baby teeth context carefully, but do not ignore cavity risk.\n10. If number_of_missing_teeth is high or number_of_teeth is low, explain tooth preservation importance.\n11. If tooth_sensitivity is true, explain why sensitivity matters.\n12. If gum_bleeding is true, explain gum inflammation relevance.\n13. If diabetes_status is true, explain diabetes-related oral health risk.\n14. If pregnancy_status is true, add pregnancy-safe wording and avoid strong medication advice.\n15. Do not override or modify the model_output.\n\nOutput requirements:\nReturn JSON only.\nDo not include markdown.\nDo not include text outside JSON.\nEvery care plan item must have a short point and detailed explanation so it can be displayed in a frontend accordion.\n\nUse exactly this JSON structure:\n\n{\n  \"model_output\": {\n    \"risk_score\": 0,\n    \"risk_level\": \"\",\n    \"care_plan\": {}\n  },\n  \"post_validation\": {\n    \"status\": \"passed | warning | failed\",\n    \"inconsistencies\": [\n      {\n        \"field\": \"\",\n        \"model_value\": \"\",\n        \"issue\": \"\",\n        \"severity\": \"low | medium | high\",\n        \"recommended_note\": \"\"\n      }\n    ],\n    \"safety_notes\": []\n  },\n  \"risk_report\": {\n    \"title\": \"\",\n    \"summary\": \"\",\n    \"risk_score_text\": \"\",\n    \"risk_level_text\": \"\",\n    \"main_risk_factors\": [],\n    \"risk_reducing_factors\": [],\n    \"possible_concerns\": []\n  },\n  \"care_plan_report\": [\n    {\n      \"key\": \"toothpaste_type\",\n      \"title\": \"Toothpaste Recommendation\",\n      \"selected_value\": \"\",\n      \"short_point\": \"\",\n      \"detailed_explanation\": \"\",\n      \"safety_note\": \"\"\n    },\n    {\n      \"key\": \"mouthwash_type\",\n      \"title\": \"Mouthwash Recommendation\",\n      \"selected_value\": \"\",\n      \"short_point\": \"\",\n      \"detailed_explanation\": \"\",\n      \"safety_note\": \"\"\n    },\n    {\n      \"key\": \"interdental_tool\",\n      \"title\": \"Interdental Cleaning Tool\",\n      \"selected_value\": \"\",\n      \"short_point\": \"\",\n      \"detailed_explanation\": \"\",\n      \"safety_note\": \"\"\n    },\n    {\n      \"key\": \"rinse_type\",\n      \"title\": \"Supportive Rinse\",\n      \"selected_value\": \"\",\n      \"short_point\": \"\",\n      \"detailed_explanation\": \"\",\n      \"safety_note\": \"\"\n    },\n    {\n      \"key\": \"pain_relief\",\n      \"title\": \"Temporary Pain Relief Support\",\n      \"selected_value\": \"\",\n      \"short_point\": \"\",\n      \"detailed_explanation\": \"\",\n      \"safety_note\": \"\"\n    },\n    {\n      \"key\": \"dietary_action\",\n      \"title\": \"Dietary Action\",\n      \"selected_value\": \"\",\n      \"short_point\": \"\",\n      \"detailed_explanation\": \"\",\n      \"safety_note\": \"\"\n    },\n    {\n      \"key\": \"dentist_urgency\",\n      \"title\": \"Dentist Visit Urgency\",\n      \"selected_value\": \"\",\n      \"short_point\": \"\",\n      \"detailed_explanation\": \"\",\n      \"safety_note\": \"\"\n    },\n    {\n      \"key\": \"monitoring_focus\",\n      \"title\": \"Monitoring Focus\",\n      \"selected_value\": \"\",\n      \"short_point\": \"\",\n      \"detailed_explanation\": \"\",\n      \"safety_note\": \"\"\n    },\n    {\n      \"key\": \"lifestyle_action\",\n      \"title\": \"Lifestyle Action\",\n      \"selected_value\": \"\",\n      \"short_point\": \"\",\n      \"detailed_explanation\": \"\",\n      \"safety_note\": \"\"\n    }\n  ],\n  \"ethical_considerations\": {\n    \"main_disclaimer\": \"\",\n    \"medication_disclaimer\": \"\",\n    \"professional_care_disclaimer\": \"\",\n    \"research_context\": \"\"\n  }\n}",
+        "options": {
+          "systemMessage": "You are an AI interpretation, post-validation, and ethical safety layer for a dental risk assessment system.\n\nYou do not train models and you do not make new predictions. The ML/FastAPI service already provides the risk_score, risk_level, and care_plan labels.\n\nYour job is to:\n1. Validate whether the model output is suitable for the given health profile.\n2. Detect inconsistencies between the health profile and care plan labels.\n3. Keep the original model output unchanged.\n4. Explain the risk score and risk level in detailed, human-readable English.\n5. Explain each care plan item clearly for a non-medical user.\n6. Add ethical, safety, and professional-care disclaimers.\n7. Return structured JSON only.\n\nImportant safety rules:\n- Do not diagnose.\n- Do not prescribe medicine.\n- Do not recommend antibiotics.\n- Do not mention exact medication dosages.\n- Do not say the user can avoid seeing a dentist.\n- Do not say any product will cure the disease.\n- Only discuss non-prescription supportive oral-care guidance.\n- Pain relief explanations must be framed as temporary symptom support only.\n- If pregnancy_status is true, use extra caution with medication-related wording.\n- If smoking_status is \"no\", do not advise smoking reduction.\n- If alcohol_usage is \"no\", do not advise alcohol reduction.\n- If an inconsistency exists, list it under post_validation.inconsistencies instead of changing the model output.\n- Use simple but professional language suitable for a patient-facing report.\nBranding and wording rules:\n- Refer to the system as:\n  \"AI-ML assisted dental risk assessment and care recommendation engine\"\n  or\n  \"advanced dental risk assessment engine\"\n  or\n  \"AI-ML assisted oral health assessment system\"\n\n- Do NOT use phrases like:\n  \"the model predicted\"\n  \"the model says\"\n  \"the AI predicts\"\n\n- Instead use professional system-oriented wording such as:\n  \"Based on the AI-assisted dental risk assessment engine...\"\n  \"According to the advanced oral health assessment system...\"\n  \"The risk assessment engine identified...\"\n  \"The assessment detected...\"\n  \"The assessment indicates...\"\n  \"The AI-assisted evaluation identified...\"\n\nand use these based on the preferred language\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1520,
+        32
+      ],
+      "id": "e220104d-43de-4def-9d4b-8acb2f29f9dc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw =\n  $json.content ||\n  $json.text ||\n  $json.message ||\n  $json.output;\n\nlet parsed;\n\ntry {\n  parsed = typeof raw === 'string'\n    ? JSON.parse(raw)\n    : raw;\n} catch (e) {\n  return [\n    {\n      json: {\n        success: false,\n        parse_error: true,\n        raw_response: raw,\n        error_message: e.message\n      }\n    }\n  ];\n}\n\nreturn [\n  {\n    json: {\n      success: true,\n      ai_report: parsed\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        -224
+      ],
+      "id": "2a0de51e-a6e7-4a2b-a8a3-c7ceea4a3694",
+      "name": "Parse AI Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2256,
+        -128
+      ],
+      "id": "9ba2f74c-0cc8-4918-9e31-98c4eb415a4c",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $json.health_profile;\n\nreturn [\n  {\n    json: {\n      age: Number(p.age),\n      number_of_teeth: Number(p.number_of_teeth),\n      number_of_missing_teeth: Number(p.number_of_missing_teeth),\n      is_primary_teeth: Boolean(p.is_primary_teeth),\n\n      smoking_status: String(p.smoking_status).trim().toLowerCase(),\n      alcohol_usage: String(p.alcohol_usage).trim().toLowerCase(),\n      sugar_usage: String(p.sugar_usage).trim().toLowerCase(),\n\n      brushing_frequency: Number(p.brushing_frequency),\n\n      diabetes_status: Boolean(p.diabetes_status),\n      pregnancy_status: Boolean(p.pregnancy_status),\n      gum_bleeding: Boolean(p.gum_bleeding),\n      tooth_sensitivity: Boolean(p.tooth_sensitivity),\n      calcium_or_vitamin_deficiency: Boolean(p.calcium_or_vitamin_deficiency),\n\n      number_of_filled_teeth: Number(p.number_of_filled_teeth),\n      overall_oral_hygiene_level: String(p.overall_oral_hygiene_level).trim().toLowerCase(),\n\n      identified_disease: String(p.identified_disease).trim().toLowerCase(),\n      disease_severity_from_xray: String(p.disease_severity_from_xray).trim().toLowerCase(),\n\n      affected_teeth_count: Number(p.affected_teeth_count)\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "cba08d40-bb6f-4dd4-b625-7ff361cee19e",
+      "name": "Prepare FastAPI Payload"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1552,
+        288
+      ],
+      "id": "5abd3c3b-0c75-4030-bd96-00ca965bda91",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "zslkBLCCxw1feBKc",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiReport = $json.ai_report;\n\nreturn [\n  {\n    json: {\n      success: true,\n      workflow_version: \"v1.0\",\n      generated_at: new Date().toISOString(),\n      report: aiReport\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2032,
+        128
+      ],
+      "id": "18ef07e2-ae2b-416b-ae1a-bba007cfeb1d",
+      "name": "Build Final Response"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Webhook Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Webhook Body": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Health Profile Values": {
+      "main": [
+        [
+          {
+            "node": "Prepare FastAPI Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Normalize Health Profile Values",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Prepare FastAPI Prediction Payload": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Validate FastAPI Model Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate FastAPI Model Output": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Build AI Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build AI Context": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Build Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare FastAPI Payload": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Final Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "cfdb3ebe-8a34-476b-a01d-4aaf2b8de72d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b3d8db312a765b42c5969de40330b0a4c1249fed50498ac03c22690cc81a7252"
+  },
+  "id": "8b69r7hGGsiOIk81",
+  "tags": []
+}
