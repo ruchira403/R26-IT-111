@@ -1,0 +1,27 @@
+{
+  "smoking_status": {
+    "no": 0,
+    "medium": 1,
+    "high": 2
+  },
+  "alcohol_usage": {
+    "no": 0,
+    "medium": 1,
+    "high": 2
+  },
+  "sugar_usage": {
+    "no": 0,
+    "medium": 1,
+    "high": 2
+  },
+  "overall_oral_hygiene_level": {
+    "good": 0,
+    "moderate": 1,
+    "poor": 2
+  },
+  "disease_severity_from_xray": {
+    "mild": 0,
+    "moderate": 1,
+    "severe": 2
+  }
+}
