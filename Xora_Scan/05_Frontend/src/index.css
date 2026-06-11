@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-light: #3b82f6;
+  --color-brand: #0066FF;
+  --color-brand-dark: #0052cc;
+  --color-navy-900: #0B1220;
+  --color-navy-950: #060B14;
+  --font-sans: 'Outfit', 'Inter', sans-serif;
+}
+
+html, body {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  scroll-behavior: smooth;
+  margin: 0;
+  padding: 0;
+  background-color: #F8FAFC;
+  color: #0F172A;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Styles */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-panel-dark {
+  background: rgba(11, 18, 32, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glow-blue {
+  box-shadow: 0 0 40px -10px rgba(0, 102, 255, 0.2);
+}
+
+.glow-blue-strong {
+  box-shadow: 0 0 25px 5px rgba(0, 102, 255, 0.3);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

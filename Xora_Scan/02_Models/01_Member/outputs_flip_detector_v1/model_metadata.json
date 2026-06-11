@@ -1,0 +1,9 @@
+{
+    "researcher_id": "it22092016",
+    "model_type": "Stage 1 - Binary Flip Detector",
+    "accuracy": "81.25%",
+    "classes": [
+        "Normal",
+        "Flipped"
+    ]
+}
