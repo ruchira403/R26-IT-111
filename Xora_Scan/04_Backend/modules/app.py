@@ -248,6 +248,9 @@ STAGE2_MODEL_PATH = os.path.join(PROJECT_ROOT, '02_Models', '01_Member', 'output
 IMAGE_SIZE = (224, 224)
 STAGE2_CLASSES = ['0_Correct', '1_Rotate_90', '2_Rotate_180', '3_Rotate_270', '4_Non_Dental']
 
+# 💡 SAFEGUARD: AI එකේ අවම විශ්වාසය (Confidence Threshold)
+CONFIDENCE_THRESHOLD = 0.55
+
 stage1_model = None
 stage2_model = None
 
@@ -300,21 +303,47 @@ def run_image_validation_pipeline(img_cv2):
     flip_prob = float(stage1_model.predict(s1_input, verbose=0)[0][0])
     is_flipped_detected = flip_prob > 0.5
 
+    print("\n" + "="*60)
+    print("🔍 [DEBUG] STAGE 1 - FLIP DETECTOR MODEL")
+    print(f"👉 Raw Flip Probability: {flip_prob:.4f}")
+    print(f"👉 Is Flip Detected? (prob > 0.5): {is_flipped_detected}")
+    print("="*60)
+
     # [STAGE 2] MAX-CONFIDENCE VOTING LOGIC
     s2_input_orig = preprocess_for_stage2(img_cv2)
     preds_orig = stage2_model.predict(s2_input_orig, verbose=0)[0]
     max_conf_orig = float(np.max(preds_orig))
     class_idx_orig = int(np.argmax(preds_orig))
     
-    flipped_img_cv2 = cv2.flip(img_cv2, 1)
+    # ⚠️ FIX: cv2.flip(..., 1) කරන්නේ horizontal flip (Mirror) කිරීමටයි. 
+    # නමුත් vertical inverted (යටිකුරු) දෝෂ හඳුනාගැනීමට අවශ්‍ය නම් cv2.flip(..., 0) හෝ cv2.rotate(..., cv2.ROTATE_180) විය යුතුය.
+    flipped_img_cv2 = cv2.flip(img_cv2, 1) 
     s2_input_corr = preprocess_for_stage2(flipped_img_cv2)
     preds_corr = stage2_model.predict(s2_input_corr, verbose=0)[0]
     max_conf_corr = float(np.max(preds_corr))
     class_idx_corr = int(np.argmax(preds_corr))
 
+    print("\n" + "="*60)
+    print("🔍 [DEBUG] STAGE 2 - ROTATION & VALIDITY VOTING")
+    print(f"🖼️  Original Image -> Class: {STAGE2_CLASSES[class_idx_orig]} (Idx: {class_idx_orig}), Conf: {max_conf_orig:.4f}")
+    print(f"🪞 Flipped Image  -> Class: {STAGE2_CLASSES[class_idx_corr]} (Idx: {class_idx_corr}), Conf: {max_conf_corr:.4f}")
+
+    # 🚨 CRITICAL FIX 1: මොඩල් එකට පින්තූරය ගැන කිසිම විශ්වාසයක් නැත්නම් (Low Confidence), බලෙන් Fix නොකර කෙලින්ම Reject කිරීම.
+    if max_conf_orig < CONFIDENCE_THRESHOLD and max_conf_corr < CONFIDENCE_THRESHOLD:
+        print("❌ [REJECTED] Model confidence is too low. Image structure is ambiguous.")
+        return {
+            "status": "Rejected",
+            "reason": "Ambiguous image structure. Low model confidence.",
+            "message": "The uploaded X-ray lacks clear structural landmarks or features. Please upload a clearer radiograph."
+        }, None
+
     strict_flip_condition = (is_flipped_detected and max_conf_corr > 0.50) or \
                             (flip_prob > 0.40 and max_conf_corr > (max_conf_orig + 0.05) and class_idx_orig != 4)
 
+    print(f"⚡ Strict Flip Condition Evaluation Result: {strict_flip_condition}")
+    print("="*60 + "\n")                        
+
+    # 🚨 CRITICAL FIX 2: Condition එක False නම්, කිසිම වෙනසක් නොකර සැබෑ ඔරිජිනල් පින්තූරයම (img_cv2) ඉදිරියට පාස් කිරීම.
     if strict_flip_condition:
         working_img = flipped_img_cv2.copy()
         detected_class_id = class_idx_corr
@@ -322,7 +351,7 @@ def run_image_validation_pipeline(img_cv2):
         is_flipped_corrected = True
         flip_note = "Horizontal Flip anomaly corrected automatically."
     else:
-        working_img = img_cv2.copy()
+        working_img = img_cv2.copy()  # මෙතනට ඔරිජිනල් පින්තූරයම ලැබෙන බව ස්ථිරයි
         detected_class_id = class_idx_orig
         confidence = max_conf_orig
         is_flipped_corrected = False
@@ -343,10 +372,12 @@ def run_image_validation_pipeline(img_cv2):
     # QUALITY ANALYSIS
     exposure, is_blurred, blur_val, quality_score = calculate_quality_metrics(working_img)
 
-    if quality_score < 40:
-        fail_reason = "Low image quality."
+    # 🚨 CRITICAL FIX 3: Quality Score එක අඩු නම් හෝ Low Confidence නම් පද්ධතියේ ආරක්ෂාව සඳහා Reject කිරීම.
+    if quality_score < 40 or confidence < CONFIDENCE_THRESHOLD:
+        fail_reason = "Low image quality or high ambiguity."
         if is_blurred: fail_reason += " Image is too blurry."
         if exposure != "Good": fail_reason += f" Lighting is {exposure}."
+        if confidence < CONFIDENCE_THRESHOLD: fail_reason += " AI confidence is insufficient."
 
         return {
             "status": "Rejected",
@@ -354,7 +385,9 @@ def run_image_validation_pipeline(img_cv2):
             "quality_score": quality_score,
             "blur_score": blur_val,
             "exposure": exposure,
-            "is_flipped_corrected": is_flipped_corrected
+            "confidence": round(confidence, 2),
+            "is_flipped_corrected": is_flipped_corrected,
+            "message": "The image quality is too poor for a safe diagnostic analysis. Please re-upload a higher quality image."
         }, None
 
     # AUTO-ROTATION LOGIC
