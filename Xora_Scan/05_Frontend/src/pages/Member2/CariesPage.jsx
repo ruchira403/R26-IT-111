@@ -26,7 +26,7 @@ const ACCEPTED_FORMATS = "image/jpeg, image/png, image/webp";
 export default function CariesPage() {
   const { navigateTo, pageData } = usePage();
 
-  // ── Pre-loaded data from Stage 1 (ValidationPage) ──────────────────────────
+  // Pre-loaded data from Stage 1 (ValidationPage) 
   const passedBackend = pageData?.backendData ?? null;  // full backend payload
   const passedPreview = pageData?.originalPreviewUrl ?? null; // original uploaded image URL
   const passedCaries = passedBackend?.caries_results ?? null;
@@ -35,7 +35,7 @@ export default function CariesPage() {
   // Determine if we already have caries data handed over from Stage 1
   const hasPassedResult = !!(passedCaries && passedCaries.diagnosis);
 
-  // ── Fresh-upload state (used when user re-uploads on this page) ─────────────
+  // Fresh-upload state (used when user re-uploads on this page) 
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -45,6 +45,10 @@ export default function CariesPage() {
   const [steps, setSteps] = useState({
     loading: "idle", inference: "idle", postprocess: "idle",
   });
+
+  // NEW STATES FOR DATABASE SAVING 
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Show either the fresh result (from a re-upload on this page) or the passed result
   const displayResult = freshResult ?? (hasPassedResult ? passedCaries : null);
@@ -62,6 +66,7 @@ export default function CariesPage() {
     setFreshResult(null);
     setImageError(null);
     setNetworkError(null);
+    setSaveSuccess(false); // Reset database status
     setSteps({ loading: "idle", inference: "idle", postprocess: "idle" });
   };
 
@@ -71,6 +76,7 @@ export default function CariesPage() {
     setFreshResult(null);
     setImageError(null);
     setNetworkError(null);
+    setSaveSuccess(false); // Reset database status
     setSteps({ loading: "idle", inference: "idle", postprocess: "idle" });
   };
 
@@ -95,6 +101,7 @@ export default function CariesPage() {
     setFreshResult(null);
     setImageError(null);
     setNetworkError(null);
+    setSaveSuccess(false);
     setSteps({ loading: "processing", inference: "idle", postprocess: "idle" });
 
     const formData = new FormData();
@@ -132,11 +139,50 @@ export default function CariesPage() {
         "Backend connection failed. Please ensure the Flask server is running on http://127.0.0.1:5000."
       );
     } finally {
-      setLoading(false);
+      loading(false);
     }
   };
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
+  // 💡 ── NEW FUNCTION: SAVE TO SHARED POSTGRES DATABASE (UPDATED) ──────────────────────
+  const handleSaveToDatabase = async () => {
+    if (!displayResult) return;
+
+    setSaveLoading(true);
+    try {
+      
+      const payload = {
+        image_path: displayPreview || "path/to/xray_image.png",
+        quality_score: passedBackend?.quality_score ?? 100.0, 
+        confidence_score: displayResult.caries_confidence ?? 0.0,
+        exposure: passedBackend?.exposure ?? "Good",
+        is_blurred: passedBackend?.is_blurred ?? false,
+        diseases: [
+          {
+            type: displayResult.diagnosis || "Dental Caries",
+            
+            severity_level: displayResult.disease_level || "N/A", 
+            confidence: displayResult.caries_confidence ?? 0.0
+          }
+        ]
+      };
+
+      console.log("Sending updated payload to Node.js backend:", payload);
+
+      const response = await axios.post("http://localhost:8000/api/save-diagnosis", payload);
+
+      if (response.data.success || response.data.status === "Success") {
+        setSaveSuccess(true);
+        alert("🎉 Data successfully saved to the Shared Database with Severity Level!");
+      }
+    } catch (err) {
+      console.error("Error saving to database:", err);
+      alert("❌ Failed to save data. Please ensure the Node.js backend is running on Port 8000.");
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  // Helpers 
 
   const StepBadge = ({ status }) => {
     if (status === "processing")
@@ -152,16 +198,13 @@ export default function CariesPage() {
 
   const severityColour = (level) => {
     const l = (level || "").toLowerCase();
-    if (l.includes("severe")) return "text-rose-600";
-    if (l.includes("moderate")) return "text-amber-500";
-    if (l.includes("mild")) return "text-yellow-500";
+    if (l.includes("severe") || l.includes("3")) return "text-rose-600";
+    if (l.includes("moderate") || l.includes("2")) return "text-amber-500";
+    if (l.includes("mild") || l.includes("1")) return "text-yellow-500";
     return "text-emerald-600";
   };
 
-  // Are we showing a fresh upload UI (no passed data, or user chose to re-upload)?
-  const showUploadPanel = !hasPassedResult || selectedFile;
-
-  // ── UI ───────────────────────────────────────────────────────────────────────
+  // UI 
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans transition-colors duration-300">
@@ -182,25 +225,23 @@ export default function CariesPage() {
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">
               Stage 2:{" "}
               <span className="bg-gradient-to-r from-brand to-indigo-600 bg-clip-text text-transparent">
-                Pathology Analysis
+                Disease Analysis
               </span>
             </h1>
             <p className="text-slate-500 text-xs sm:text-sm mt-1 font-medium">
-              Researcher ID:{" "}
-              <span className="text-slate-700 font-semibold font-mono">Member 02 Engine</span>{" "}
-              | YOLOv11-Powered Caries Detection
+              Disease Detection{" "}
+              <span className="text-slate-700 font-semibold font-mono"></span>{" "}
+              |
             </p>
           </div>
           <div className="px-3.5 py-1.5 rounded-full bg-indigo-600/10 border border-indigo-600/20 text-xs font-semibold text-indigo-600 tracking-wide uppercase flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-indigo-600 animate-ping" />
-            Member 02 Engine
+            Stage 02 Engine
           </div>
         </div>
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION A — PRE-LOADED RESULTS FROM STAGE 1
-            Shown when caries_results were already returned by the validate API.
-        ══════════════════════════════════════════════════════════════════════ */}
+        {/* 
+            SECTION A — PRE-LOADED RESULTS FROM STAGE 1*/}
         {hasPassedResult && !selectedFile && (
           <div className="space-y-8 animate-fadeIn">
 
@@ -212,10 +253,8 @@ export default function CariesPage() {
               </div>
             </div>
 
-            {/* Dual image panel — original vs. fixed */}
+            {/* Dual image panel */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-              {/* Fixed / stabilised image from Stage 1 */}
               <div className="bg-white p-4 rounded-2xl border border-slate-100 relative shadow-xl shadow-slate-100/30">
                 <span className="text-xs font-bold text-brand tracking-wider uppercase block mb-3">
                   2. Stage 1 AI-Stabilised Output
@@ -235,7 +274,7 @@ export default function CariesPage() {
               </div>
             </div>
 
-            {/* Pathology Analysis card — matches the original design */}
+            {/* Pathology Analysis card */}
             <div className="bg-gradient-to-r from-white to-blue-50/50 p-6 rounded-3xl border border-brand/20 shadow-xl shadow-brand/5">
               <div className="flex justify-between items-center mb-5 pb-4 border-b border-brand/10">
                 <h3 className="text-sm font-bold text-brand tracking-wider uppercase flex items-center gap-2">
@@ -249,7 +288,6 @@ export default function CariesPage() {
 
               {/* KPI row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
-                {/* Diagnosis */}
                 <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Detected Diagnosis</div>
                   <div className="text-lg font-bold text-slate-800 mt-1 leading-snug">
@@ -258,7 +296,6 @@ export default function CariesPage() {
                   <div className="text-[10px] text-slate-400 font-medium mt-1">Pathology type</div>
                 </div>
 
-                {/* Confidence */}
                 <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                     <BarChart3 className="w-3 h-3" /> Model Confidence
@@ -274,16 +311,15 @@ export default function CariesPage() {
                   </div>
                 </div>
 
-                {/* Severity */}
                 <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    <Zap className="w-3 h-3" /> Severity Level
+                    <Zap className="w-3 h-3" /> Risk Level
                   </div>
                   <div className={`text-lg font-extrabold mt-1 ${severityColour(passedCaries.disease_level)}`}>
                     {passedCaries.disease_level ?? "—"}
                   </div>
                   <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
-                    Clinical severity rating
+                    Clinical Risk rating
                   </div>
                 </div>
               </div>
@@ -293,28 +329,37 @@ export default function CariesPage() {
                 <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                   <div className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2 mb-2">
                     <FileText className="w-3.5 h-3.5 text-brand" />
-                    <span>Clinical Note</span>
+                    <span> Note</span>
                   </div>
                   <p className="text-sm text-slate-600 leading-relaxed italic">"{passedCaries.clinical_note}"</p>
                 </div>
               )}
             </div>
 
-            {/* Option to run a fresh scan on this page */}
-            {/* Option to run a fresh scan on this page -> Navigates back to Stage 1 */}
-            <div className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
-              <div className="text-xs text-slate-500 font-medium">
-                Want to analyse a different image on this page?
-              </div>
+            {/* BUTTON CONTAINER FOR SECTION A */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-end p-6 bg-white border border-slate-100 rounded-3xl shadow-md">
               <button
-                onClick={() => {
-                  // 🔄 Stage 1 (ValidationPage) එකට යවනවා, හැබැයි 'triggerFreshUpload' කියන එක true කරලා
-                  navigateTo("validation", { triggerFreshUpload: true });
-                }}
-                className="inline-flex items-center gap-2 text-xs font-bold text-brand hover:text-brand-dark transition-colors cursor-pointer bg-brand/5 px-4 py-2 rounded-xl border border-brand/10"
+                onClick={() => navigateTo("validation", { triggerFreshUpload: true })}
+                className="px-6 py-3 border border-slate-200 text-slate-600 font-bold text-sm rounded-xl hover:bg-slate-50 transition-all uppercase tracking-wider cursor-pointer"
               >
-                <Upload className="w-3.5 h-3.5" />
-                Upload new image
+                Upload New Image
+              </button>
+              <button
+                onClick={handleSaveToDatabase}
+                disabled={saveLoading || saveSuccess}
+                className={`px-8 py-3 rounded-xl font-bold text-sm uppercase tracking-wider text-white flex items-center justify-center gap-2 transition-all shadow-lg ${
+                  saveSuccess 
+                    ? "bg-emerald-500 shadow-emerald-100 cursor-not-allowed" 
+                    : "bg-brand hover:bg-brand-dark shadow-brand/25 hover:-translate-y-0.5 cursor-pointer"
+                }`}
+              >
+                {saveLoading ? (
+                  <><RefreshCw className="w-4 h-4 animate-spin" /> <span>Saving...</span></>
+                ) : saveSuccess ? (
+                  <><CheckCircle className="w-4 h-4" /> <span>Saved Successfully</span></>
+                ) : (
+                  <><CheckCircle className="w-4 h-4" /> <span>Continue & Proceed</span></>
+                )}
               </button>
             </div>
 
@@ -323,8 +368,7 @@ export default function CariesPage() {
 
         {/* ══════════════════════════════════════════════════════════════════════
             SECTION B — FRESH UPLOAD UI
-            Shown when no passed data exists OR user chose to upload a new image.
-        ══════════════════════════════════════════════════════════════════════ */}
+         ══════════════════════════════════════════════════════════════════════ */}
         {(!hasPassedResult || selectedFile) && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
@@ -372,10 +416,11 @@ export default function CariesPage() {
               <button
                 onClick={handleUpload}
                 disabled={loading || !selectedFile}
-                className={`w-full py-4 mt-8 rounded-2xl font-bold text-sm tracking-wider uppercase flex items-center justify-center gap-2 text-white shadow-lg border transition-all duration-300 cursor-pointer ${loading || !selectedFile
+                className={`w-full py-4 mt-8 rounded-2xl font-bold text-sm tracking-wider uppercase flex items-center justify-center gap-2 text-white shadow-lg border transition-all duration-300 cursor-pointer ${
+                  loading || !selectedFile
                     ? "bg-slate-100 text-slate-400 border-slate-200 shadow-none cursor-not-allowed opacity-50"
-                    : "bg-brand hover:bg-brand-dark border-brand shadow-brand/25 hover:shadow-brand/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
-                  }`}
+                    : "bg-brand hover:bg-brand-dark border-brand shadow-brand/25 shadow-brand/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                }`}
               >
                 {loading ? (
                   <><RefreshCw className="w-4 h-4 animate-spin" /><span>Detecting Caries...</span></>
@@ -408,8 +453,9 @@ export default function CariesPage() {
                     ].map(({ key, label, sub }) => (
                       <div
                         key={key}
-                        className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-300 ${steps[key] === "processing" ? "border-brand/40 bg-brand/5" : "border-slate-100 bg-slate-50/30"
-                          }`}
+                        className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-300 ${
+                          steps[key] === "processing" ? "border-brand/40 bg-brand/5" : "border-slate-100 bg-slate-50/30"
+                        }`}
                       >
                         <div className="flex items-center space-x-3">
                           <StepBadge status={steps[key]} />
@@ -450,7 +496,7 @@ export default function CariesPage() {
                 </div>
               )}
 
-              {/* ⛔ Wrong image error */}
+              {/* Wrong image error */}
               {imageError && !loading && (
                 <div className="bg-rose-50/40 border border-rose-200 rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center shadow-xl shadow-slate-100/40 min-h-[300px] animate-fadeIn">
                   <div className="w-14 h-14 bg-rose-100 border border-rose-200 rounded-full flex items-center justify-center text-rose-600 mb-4">
@@ -462,35 +508,11 @@ export default function CariesPage() {
                   <p className="text-sm text-slate-500 max-w-md mt-2 leading-relaxed">
                     The uploaded image could not be processed by the Caries Detection Engine. Please upload a clear dental panoramic or periapical X-ray.
                   </p>
-
-                  <div className="w-full max-w-lg grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 bg-white border border-rose-100 p-5 rounded-2xl text-left shadow-sm">
-                    <div>
-                      <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Rejection Reason</span>
-                      <div className="text-sm font-bold text-rose-700 mt-1 leading-snug">{imageError.reason}</div>
-                    </div>
-                    {imageError.label && (
-                      <div>
-                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Model Classification</span>
-                        <div className="text-sm font-bold text-slate-800 mt-1">{imageError.label}</div>
-                        {imageError.confidence !== null && (
-                          <div className="text-[10px] text-slate-400 mt-1 font-bold">
-                            System Confidence: {(imageError.confidence * 100).toFixed(0)}%
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="w-full max-w-lg mt-3 text-[11px] text-amber-700 bg-amber-50/60 border border-amber-200/60 px-4 py-2.5 rounded-xl text-left italic">
-                    💡 Tip: Ensure the image is a genuine dental X-ray (panoramic, periapical, or bitewing) in JPEG or PNG format with clear tooth structures visible.
-                  </div>
-
                   <button
                     onClick={handleReset}
-                    className="mt-8 px-6 py-3 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-200/40 tracking-wider uppercase transition-all duration-200 cursor-pointer flex items-center gap-2"
+                    className="mt-8 px-6 py-3 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold text-xs rounded-xl shadow-md tracking-wider uppercase transition-all duration-200 cursor-pointer flex items-center gap-2"
                   >
-                    <Upload className="w-4 h-4" />
-                    Re-upload Correct Image
+                    <Upload className="w-4 h-4" /> Re-upload Correct Image
                   </button>
                 </div>
               )}
@@ -541,12 +563,6 @@ export default function CariesPage() {
                         <div className="text-3xl font-extrabold text-brand mt-1">
                           {((freshResult.caries_confidence ?? 0) * 100).toFixed(0)}%
                         </div>
-                        <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
-                          <div
-                            className="bg-gradient-to-r from-brand to-indigo-500 h-full"
-                            style={{ width: `${((freshResult.caries_confidence ?? 0) * 100).toFixed(0)}%` }}
-                          />
-                        </div>
                       </div>
                       <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
@@ -557,27 +573,35 @@ export default function CariesPage() {
                         </div>
                       </div>
                     </div>
-
-                    {freshResult.clinical_note && (
-                      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                        <div className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2 mb-2">
-                          <Sparkles className="w-3.5 h-3.5 text-brand" />
-                          <span>Clinical Note</span>
-                        </div>
-                        <p className="text-sm text-slate-600 leading-relaxed italic">"{freshResult.clinical_note}"</p>
-                      </div>
-                    )}
                   </div>
 
-                  <div className="flex justify-end">
+                  {/* 💡 ── BUTTON CONTAINER FOR SECTION B (FRESH SCANS) ───────────────── */}
+                  <div className="flex flex-col sm:flex-row gap-4 justify-end p-6 bg-white border border-slate-100 rounded-3xl shadow-md">
                     <button
                       onClick={handleReset}
-                      className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-brand transition-colors cursor-pointer"
+                      className="px-6 py-3 border border-slate-200 text-slate-600 font-bold text-sm rounded-xl hover:bg-slate-50 transition-all uppercase tracking-wider cursor-pointer"
                     >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      Analyse another image
+                      Reset / Clear
+                    </button>
+                    <button
+                      onClick={handleSaveToDatabase}
+                      disabled={saveLoading || saveSuccess}
+                      className={`px-8 py-3 rounded-xl font-bold text-sm uppercase tracking-wider text-white flex items-center justify-center gap-2 transition-all shadow-lg ${
+                        saveSuccess 
+                          ? "bg-emerald-500 shadow-emerald-100 cursor-not-allowed" 
+                          : "bg-brand hover:bg-brand-dark shadow-brand/25 hover:-translate-y-0.5 cursor-pointer"
+                      }`}
+                    >
+                      {saveLoading ? (
+                        <><RefreshCw className="w-4 h-4 animate-spin" /> <span>Saving...</span></>
+                      ) : saveSuccess ? (
+                        <><CheckCircle className="w-4 h-4" /> <span>Saved Successfully</span></>
+                      ) : (
+                        <><CheckCircle className="w-4 h-4" /> <span>Continue & Proceed</span></>
+                      )}
                     </button>
                   </div>
+
                 </div>
               )}
 

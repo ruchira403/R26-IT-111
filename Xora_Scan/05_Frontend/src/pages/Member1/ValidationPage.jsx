@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import Swal from "sweetalert2"; // 🚀 ලස්සන Popups සඳහා SweetAlert2 එකතු කිරීම
+import Swal from "sweetalert2"; 
 import {
     Upload,
     CheckCircle,
@@ -55,7 +55,7 @@ export default function ValidationPage() {
         setSteps({ validity: 'idle', orientation: 'idle', metrics: 'idle', pathology: 'idle' });
     };
 
-    // 🚀 3. සාර්ථකව ප්‍රතික්ෂේප වූ විට පෙන්වන Alert Popup Logic එක
+    // Reject Alert Popup Logic 
     const triggerRejectionPopup = (reason, label, confidence) => {
         Swal.fire({
             title: `<span style="color: #e11d48; font-family: sans-serif; font-weight: 800;">INTEGRITY CHECK FAILED</span>`,
@@ -79,7 +79,7 @@ export default function ValidationPage() {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                handleReset(); // බටන් එක ක්ලික් කළ සැනින් UI එක Reset කිරීම
+                handleReset(); // reset the ui immediatly when the button click
             }
         });
     };
@@ -95,7 +95,7 @@ export default function ValidationPage() {
         setBackendData(null);
         setError(null);
 
-        // පළමු පියවර 'processing' කිරීම
+        //  'processing' 
         setSteps({
             validity: 'processing',
             orientation: 'idle',
@@ -106,19 +106,19 @@ export default function ValidationPage() {
         formData.append("image", selectedFile);
 
         try {
-            // Backend API එකට කතා කිරීම
+            // call Backend API 
             const apiResponse = await axios.post("http://127.0.0.1:5000/validate", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
             const resData = apiResponse.data;
-            console.log("Backend Raw Response Data:", resData); // 🔥 බ්‍රවුසර් කන්සෝල් එකේ චෙක් කරන්න ඩේටා එන විදිහ
+            console.log("Backend Raw Response Data:", resData); 
 
-            // 🚨 කන්ඩිෂන් එක වඩාත් පුළුල් කිරීම (Status එක 'Rejected' වුණත්, නැත්නම් success නොවී වෙනත් එකක් වුණත් අල්ලනවා)
+            // Broaden condition to handle 'Rejected' and any non-success status
             if (resData.status === "Rejected" || resData.status === "failed" || !resData.status) {
 
                 setSteps({
-                    validity: 'error', // 🔴 Step 1 එක වහාම රතු පාට වේ!
+                    validity: 'error', 
                     orientation: 'idle',
                     metrics: 'idle'
                 });
@@ -129,19 +129,18 @@ export default function ValidationPage() {
                 const labelText = resData.validation_results?.label || "Unknown Artifact";
                 const confidenceValue = resData.validation_results?.confidence ? (resData.validation_results.confidence * 100).toFixed(0) + "%" : "N/A";
 
-                // 🚀 SweetAlert වැඩ නොකරොත් බ්‍රවුසර් එකේම try/catch එකෙන් popup එක දීම
                 try {
                     triggerRejectionPopup(reasonText, labelText, resData.validation_results?.confidence || 0);
                 } catch (swalError) {
                     console.warn("SweetAlert2 failed, falling back to standard alert:", swalError);
-                    // 💻 Fallback Alert Popup
+                
                     alert(`❌ INTEGRITY CHECK FAILED\n\nReason: ${reasonText}\nClassification: ${labelText} (${confidenceValue})\n\nPlease re-upload a valid dental radiograph.`);
                     handleReset();
                 }
                 return;
             }
 
-            // 🟢 CASE B: පින්තූරය සාර්ථක (DENTAL X-RAY) නම් පියවර 3 පිළිවෙලට ක්‍රියාත්මක වීම
+            //  CASE B: If image is valid (DENTAL X-RAY), run steps 1 to 3 in order
             setSteps(s => ({ ...s, validity: 'success', orientation: 'processing' }));
 
             setTimeout(() => {
@@ -200,9 +199,9 @@ export default function ValidationPage() {
                         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">
                             Stage 1: <span className="bg-gradient-to-r from-brand to-indigo-600 bg-clip-text text-transparent">Image Validation & Diagnostics</span>
                         </h1>
-                        <p className="text-slate-500 text-xs sm:text-sm mt-1 font-medium">
+                        {/* <p className="text-slate-500 text-xs sm:text-sm mt-1 font-medium">
                             Researcher ID: <span className="text-slate-700 font-semibold font-mono">it22092016</span>
-                        </p>
+                        </p> */}
                     </div>
                     <div className="px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-xs font-semibold text-brand tracking-wide uppercase flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-brand animate-ping"></span>
