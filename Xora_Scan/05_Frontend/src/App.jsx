@@ -72,28 +72,40 @@
 
 // export default App;
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { PageProvider, usePage } from './context/PageContext';
-import Dashboard from './pages/Dashboard';
+import Dashboard     from './pages/Dashboard';
 import ValidationPage from './pages/Member1/ValidationPage';
-import CariesPage from './pages/Member2/CariesPage';
+import CariesPage    from './pages/Member2/CariesPage';
+// Auth pages — separate feature area, URL-routed
+import LoginPage    from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import ProfilePage  from './pages/auth/ProfilePage';
 
+/** Handles internal page switching via PageContext (dashboard / validation / caries) */
 function MainAppContent() {
   const { currentPage } = usePage();
-
-  if (currentPage === 'dashboard') return <Dashboard />;
   if (currentPage === 'validation') return <ValidationPage />;
-  if (currentPage === 'caries') return <CariesPage />;
-
-  // Fallback: show dashboard
+  if (currentPage === 'caries')     return <CariesPage />;
   return <Dashboard />;
 }
 
 function App() {
   return (
+    // PageProvider wraps everything so Header always has access to usePage()
     <PageProvider>
-      <MainAppContent />
+      <Routes>
+        {/* Main app — internal navigation via PageContext */}
+        <Route path="/"         element={<MainAppContent />} />
+
+        {/* Auth pages — real browser URLs */}
+        <Route path="/login"    element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/profile"  element={<ProfilePage />} />
+      </Routes>
     </PageProvider>
   );
 }
 
 export default App;
+

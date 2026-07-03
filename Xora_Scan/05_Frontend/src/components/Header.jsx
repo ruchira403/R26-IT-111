@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { Menu, X, Sparkles } from 'lucide-react';
+import { Menu, X, Sparkles, User, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { usePage } from '../context/PageContext';
+import { getStoredToken, clearStoredAuth } from '../auth/useAuth';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { navigateTo } = usePage();
+  const navigate = useNavigate();
+
+  // Check auth state from localStorage
+  const isLoggedIn = !!getStoredToken();
 
   const handleNavClick = (page, anchorId) => {
     navigateTo(page);
@@ -57,9 +63,34 @@ export default function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <button className="px-5 py-2 text-sm font-semibold text-slate-700 hover:text-brand hover:bg-slate-50 rounded-xl border border-transparent hover:border-slate-200 transition-all duration-200">
-              Login
-            </button>
+            {isLoggedIn ? (
+              <>
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="flex items-center gap-1.5 px-5 py-2 text-sm font-semibold text-slate-700 hover:text-brand hover:bg-slate-50 rounded-xl border border-transparent hover:border-slate-200 transition-all duration-200"
+                  id="header-profile-btn"
+                >
+                  <User className="w-4 h-4" />
+                  Profile
+                </button>
+                <button
+                  onClick={() => { clearStoredAuth(); navigate('/login'); }}
+                  className="flex items-center gap-1.5 px-5 py-2 text-sm font-semibold text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl border border-transparent hover:border-red-200 transition-all duration-200"
+                  id="header-logout-btn"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => navigate('/login')}
+                id="header-login-btn"
+                className="px-5 py-2 text-sm font-semibold text-slate-700 hover:text-brand hover:bg-slate-50 rounded-xl border border-transparent hover:border-slate-200 transition-all duration-200"
+              >
+                Login
+              </button>
+            )}
             <button 
               onClick={() => handleNavClick('validation')}
               className="relative overflow-hidden px-5 py-2.5 text-sm font-semibold text-white bg-brand hover:bg-brand-dark rounded-xl shadow-lg shadow-brand/20 hover:shadow-brand/35 transform active:scale-[0.98] transition-all duration-200 group cursor-pointer"
@@ -103,9 +134,32 @@ export default function Header() {
             </button>
             <hr className="border-slate-100 my-2" />
             <div className="grid grid-cols-2 gap-3 pt-2">
-              <button className="w-full py-2.5 text-center text-sm font-semibold text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
-                Login
-              </button>
+              {isLoggedIn ? (
+                <>
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); navigate('/profile'); }}
+                    className="w-full py-2.5 text-center text-sm font-semibold text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5"
+                    id="header-mobile-profile-btn"
+                  >
+                    <User className="w-4 h-4" /> Profile
+                  </button>
+                  <button
+                    onClick={() => { clearStoredAuth(); navigate('/login'); setMobileMenuOpen(false); }}
+                    className="w-full py-2.5 text-center text-sm font-semibold text-red-600 border border-red-200 rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5"
+                    id="header-mobile-logout-btn"
+                  >
+                    <LogOut className="w-4 h-4" /> Sign out
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => { setMobileMenuOpen(false); navigate('/login'); }}
+                  className="w-full py-2.5 text-center text-sm font-semibold text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                  id="header-mobile-login-btn"
+                >
+                  Login
+                </button>
+              )}
               <button 
                 onClick={() => handleNavClick('validation')}
                 className="w-full py-2.5 text-center text-sm font-semibold text-white bg-brand rounded-xl hover:bg-brand-dark shadow-md shadow-brand/10 transition-colors"
