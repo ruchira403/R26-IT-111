@@ -1,259 +1,19 @@
-// import React, { useState } from "react";
-// import { 
-//   LayoutDashboard, 
-//   ShieldCheck, 
-//   Activity, 
-//   Layers, 
-//   FileText, 
-//   UploadCloud, 
-//   User, 
-//   LogOut, 
-//   Flame, 
-//   CheckCircle2, 
-//   HelpCircle 
-// } from "lucide-react";
-
-// // සාමාජිකයාගේ Validation Page එක Import කර ගැනීම
-// import ValidationPage from "./Member1/ValidationPage";
-
-// const Dashboard = () => {
-//   // වත්මන් පිටුව පාලනය කිරීමට State එකක් (Default: 'dashboard')
-//   const [activeTab, setActiveTab] = useState("dashboard");
-//   const [dragActive, setDragActive] = useState(false);
-
-//   // Sidebar Menu Items (සාමාජිකයන් 4 දෙනාගේම Modules මෙතනට වෙන් කර ඇත)
-//   const menuItems = [
-//     { id: "dashboard", label: "Dashboard HUD", icon: <LayoutDashboard className="w-5 h-5" /> },
-//     { id: "validation", label: "Stage 1: Image Validation", icon: <ShieldCheck className="w-5 h-5" />, member: "Harsha S.N" },
-//     { id: "caries", label: "Stage 2: Caries Engine", icon: <Flame className="w-5 h-5" />, member: "Member 02" },
-//     { id: "segmentation", label: "Stage 3: Segmentation", icon: <Layers className="w-5 h-5" />, member: "Member 03" },
-//     { id: "analytics", label: "Stage 4: Patient Analytics", icon: <Activity className="w-5 h-5" />, member: "Member 04" },
-//   ];
-
-//   return (
-//     <div className="flex h-screen bg-[#060b26] text-white font-sans overflow-hidden">
-      
-//       {/* ==================================================================
-//           LEFT SIDEBAR: SYSTEM NAVIGATION
-//           ================================================================== */}
-//       <div className="w-72 bg-[#0b1231] border-r border-[#1a2456] flex flex-col justify-between p-6">
-//         <div>
-//           {/* Brand Logo / Header */}
-//           <div className="flex items-center gap-3 mb-10 px-2">
-//             <div className="bg-gradient-to-tr from-[#0055ff] to-[#00ffcc] p-2.5 rounded-xl shadow-lg shadow-[#0055ff]/20">
-//               <Activity className="w-6 h-6 text-white" />
-//             </div>
-//             <div>
-//               <h1 className="text-xl font-bold tracking-wide bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-//                 Xora Scan
-//               </h1>
-//               <span className="text-[10px] text-[#00ffcc] tracking-widest font-semibold uppercase">
-//                 Dental AI Core
-//               </span>
-//             </div>
-//           </div>
-
-//           {/* Navigation Links */}
-//           <div className="space-y-1.5">
-//             <span className="text-[11px] text-gray-500 font-bold uppercase tracking-wider px-2 block mb-2">
-//               Core Modules
-//             </span>
-//             {menuItems.map((item) => (
-//               <button
-//                 key={item.id}
-//                 onClick={() => setActiveTab(item.id)}
-//                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
-//                   activeTab === item.id
-//                     ? "bg-gradient-to-r from-[#0052ec] to-[#0073ff] text-white shadow-md shadow-[#0052ec]/20"
-//                     : "text-gray-400 hover:bg-[#121c46] hover:text-white"
-//                 }`}
-//               >
-//                 <div className="flex items-center gap-3">
-//                   {item.icon}
-//                   <span>{item.label}</span>
-//                 </div>
-//                 {item.member && (
-//                   <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold tracking-tight ${
-//                     activeTab === item.id 
-//                       ? "bg-white/20 text-white" 
-//                       : "bg-[#18255c] text-gray-400 group-hover:text-[#00ffcc]"
-//                   }`}>
-//                     {item.id === "validation" ? "Me" : "M" + item.id.charAt(0).toUpperCase()}
-//                   </span>
-//                 )}
-//               </button>
-//             ))}
-//           </div>
-//         </div>
-
-//         {/* User Profile Summary Bottom */}
-//         <div className="border-t border-[#1a2456] pt-4 flex items-center justify-between">
-//           <div className="flex items-center gap-3">
-//             <div className="w-10 h-10 rounded-full bg-[#1b275a] border border-[#2a3a7c] flex items-center justify-center text-sm font-bold text-[#00ffcc]">
-//               HS
-//             </div>
-//             <div>
-//               <div className="text-xs font-semibold text-white">Harsha S.N</div>
-//               <div className="text-[10px] text-gray-500">it22092016</div>
-//             </div>
-//           </div>
-//           <button className="text-gray-500 hover:text-red-400 p-2 rounded-lg transition">
-//             <LogOut className="w-4 h-4" />
-//           </button>
-//         </div>
-//       </div>
-
-//       {/* ==================================================================
-//           RIGHT CONTENT AREA: DYNAMIC TAB ROUTING
-//           ================================================================== */}
-//       <div className="flex-1 flex flex-col overflow-y-auto">
-        
-//         {/* Top Mini-Navbar */}
-//         <div className="h-16 border-b border-[#1a2456] bg-[#0b1231]/50 backdrop-blur-md flex items-center justify-between px-8 shrink-0">
-//           <div className="text-xs text-gray-400 font-medium">
-//             System Environment: <span className="text-emerald-400 font-bold">Production v1.0.4</span>
-//           </div>
-//           <div className="flex items-center gap-4">
-//             <button className="text-gray-400 hover:text-white text-xs font-medium flex items-center gap-1.5 bg-[#121c46] px-3 py-1.5 rounded-lg border border-[#1e2d6b]">
-//               <HelpCircle className="w-3.5 h-3.5" /> Documentation
-//             </button>
-//             <span className="h-4 w-px bg-[#1a2456]"></span>
-//             <div className="text-xs bg-[#0f2d2b] border border-[#12584e] text-[#00ffcc] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5">
-//               <span className="w-1.5 h-1.5 bg-[#00ffcc] rounded-full animate-ping"></span> API Gateway Online
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Main Body View */}
-//         <div className="p-8 flex-1">
-
-//           {/* VIEW A: MAIN DASHBOARD HUD */}
-//           {activeTab === "dashboard" && (
-//             <div className="max-w-5xl mx-auto space-y-8 animate-fadeIn">
-              
-//               {/* Hero Banner Section */}
-//               <div className="relative bg-gradient-to-r from-[#0d1742] via-[#091035] to-[#060b26] border border-[#1e2d6b] rounded-3xl p-8 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-//                 <div className="space-y-3 z-10 text-center md:text-left">
-//                   <span className="bg-[#0055ff]/10 text-[#3388ff] text-xs font-bold px-3 py-1 rounded-full border border-[#0055ff]/20">
-//                     ✨ Computer Vision System Core
-//                   </span>
-//                   <h2 className="text-3xl font-extrabold text-white tracking-tight">
-//                     Precision Starts with Quality.
-//                   </h2>
-//                   <p className="text-gray-400 text-sm max-w-lg leading-relaxed">
-//                     Xora Scan automatically validates dental X-ray integrity, ensuring optimal sharpness, 
-//                     contrast, and proper orientation correction before advanced diagnostic models execute.
-//                   </p>
-//                   <div className="pt-2 flex items-center justify-center md:justify-start gap-3">
-//                     <button 
-//                       onClick={() => setActiveTab("validation")}
-//                       className="bg-gradient-to-r from-[#0055ff] to-[#0099ff] text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-[#0055ff]/20 hover:opacity-90 transition"
-//                     >
-//                       Start New Scan
-//                     </button>
-//                     <button className="border border-[#233575] hover:bg-[#121c46] text-gray-300 text-xs font-bold px-5 py-2.5 rounded-xl transition">
-//                       Watch Pipeline Demo
-//                     </button>
-//                   </div>
-//                 </div>
-
-//                 {/* Right Quick Check HUD Panel (As seen in your design) */}
-//                 <div className="w-full md:w-80 bg-[#10193c] border border-[#203174] rounded-2xl p-5 space-y-4 shadow-xl z-10">
-//                   <div className="text-xs font-bold text-gray-400 tracking-wider uppercase">Pre-Processing HUD</div>
-                  
-//                   <div className="space-y-2.5">
-//                     <div className="flex items-center justify-between p-2.5 bg-[#080e29] border border-[#18255a] rounded-xl text-xs">
-//                       <span className="text-gray-400">Image Type</span>
-//                       <span className="font-bold text-[#00ffcc] flex items-center gap-1">Dental X-Ray <CheckCircle2 className="w-3.5 h-3.5" /></span>
-//                     </div>
-//                     <div className="flex items-center justify-between p-2.5 bg-[#080e29] border border-[#18255a] rounded-xl text-xs">
-//                       <span className="text-gray-400">Sharpness</span>
-//                       <span className="font-bold text-[#00ffcc] flex items-center gap-1">98% Optimal <CheckCircle2 className="w-3.5 h-3.5" /></span>
-//                     </div>
-//                     <div className="flex items-center justify-between p-2.5 bg-[#080e29] border border-[#18255a] rounded-xl text-xs">
-//                       <span className="text-gray-400">Contrast</span>
-//                       <span className="font-bold text-[#00ffcc] flex items-center gap-1">Acceptable <CheckCircle2 className="w-3.5 h-3.5" /></span>
-//                     </div>
-//                   </div>
-
-//                   <div className="w-full bg-[#0055ff]/10 border border-[#0055ff]/30 text-[#3388ff] font-bold text-xs py-2.5 rounded-xl text-center uppercase tracking-wider">
-//                     Ready For AI Analysis
-//                   </div>
-//                 </div>
-
-//                 {/* Decorative Glowing Background Orbs */}
-//                 <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-[#0055ff]/10 rounded-full blur-3xl"></div>
-//                 <div className="absolute bottom-[-30px] left-[20%] w-32 h-32 bg-[#00ffcc]/5 rounded-full blur-2xl"></div>
-//               </div>
-
-//               {/* Research Metrics / Compliance Badges Row */}
-//               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-//                 {[
-//                   { value: "500+ Clinics", label: "Trained Datasets" },
-//                   { value: "ISO 13485", label: "Medical Device Standard" },
-//                   { value: "YOLOv11 & Keras", label: "Core Architectures" },
-//                   { value: "HIPAA Compliant", label: "Data Encryption Sec" }
-//                 ].map((badge, idx) => (
-//                   <div key={idx} className="bg-[#0b1231] border border-[#1a2456] rounded-xl p-4 text-center">
-//                     <div className="text-sm font-bold text-[#00ffcc]">{badge.value}</div>
-//                     <div className="text-[11px] text-gray-500 font-medium mt-0.5">{badge.label}</div>
-//                   </div>
-//                 ))}
-//               </div>
-
-//             </div>
-//           )}
-
-//           {/* VIEW B: IMAGE VALIDATION GATEWAY (ඔයාගේ ප්‍රධාන Module එක මෙතනට Load වේ) */}
-//           {activeTab === "validation" && <ValidationPage />}
-
-//           {/* FUTURE VIEWS PLACEHOLDERS (අනෙක් සාමාජිකයන්ගේ ඒවා සඳහා) */}
-//           {activeTab === "caries" && (
-//             <div className="text-center p-12 bg-[#0b1231] border border-[#1a2456] rounded-2xl">
-//               <Flame className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-//               <h3 className="text-lg font-bold">Stage 2: Caries Engine Dashboard</h3>
-//               <p className="text-xs text-gray-400 mt-1">This module is currently coupled within the Stage 1 Validation Postman Pipeline flow.</p>
-//             </div>
-//           )}
-
-//           {activeTab === "segmentation" && (
-//             <div className="text-center p-12 bg-[#0b1231] border border-[#1a2456] rounded-2xl">
-//               <Layers className="w-12 h-12 text-purple-500 mx-auto mb-3" />
-//               <h3 className="text-lg font-bold">Stage 3: Tooth Segmentation Panel</h3>
-//               <p className="text-xs text-gray-400 mt-1">Awaiting Member 03 front-end template integration.</p>
-//             </div>
-//           )}
-
-//           {activeTab === "analytics" && (
-//             <div className="text-center p-12 bg-[#0b1231] border border-[#1a2456] rounded-2xl">
-//               <Activity className="w-12 h-12 text-[#00ffcc] mx-auto mb-3" />
-//               <h3 className="text-lg font-bold">Stage 4: Automated EMR & Patient Analytics</h3>
-//               <p className="text-xs text-gray-400 mt-1">Awaiting Member 04 front-end template integration.</p>
-//             </div>
-//           )}
-
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Dashboard;
 import React, { useState, useEffect, useRef } from 'react';
+// 💡 react-router-dom එකෙන් useNavigate අයින් කලා (මොකද ඔයාලා පාවිච්චි කරන්නේ PageContext නිසා)
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { usePage } from '../context/PageContext';
-import { 
-  Play, 
-  ShieldCheck, 
-  Check, 
-  AlertTriangle, 
-  Search, 
-  Cpu, 
-  Sparkles, 
-  Activity, 
-  Eye, 
-  Calendar, 
+import {
+  Play,
+  ShieldCheck,
+  Check,
+  AlertTriangle,
+  Search,
+  Cpu,
+  Sparkles,
+  Activity,
+  Eye,
+  Calendar,
   ArrowRight,
   TrendingDown,
   Info,
@@ -262,7 +22,9 @@ import {
 } from 'lucide-react';
 
 export default function Dashboard() {
+  // const { changePage } = usePage();
   const { navigateTo } = usePage();
+
   // --- Simulation state for pre-processing ---
   const [scanStep, setScanStep] = useState(0); // 0: idle, 1-4: checking steps, 5: success
   const [scanning, setScanning] = useState(false);
@@ -325,7 +87,7 @@ export default function Dashboard() {
             });
             return 100;
           }
-          
+
           // Manage steps
           if (next > 25 && next <= 50) {
             setScanStep(2);
@@ -438,9 +200,10 @@ export default function Dashboard() {
     { label: 'May 2026', labelEn: 'May 2026', current: true }
   ];
 
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      
+
       {/* Reusable Header */}
       <Header />
 
@@ -456,10 +219,10 @@ export default function Dashboard() {
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-              
+
               {/* Left Column: Hero copy */}
               <div className="lg:col-span-7 space-y-6 sm:space-y-8 text-left">
-                
+
                 {/* AI Badge */}
                 <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-xs font-semibold text-brand tracking-wide">
                   <span className="w-2 h-2 rounded-full bg-brand animate-ping"></span>
@@ -479,7 +242,7 @@ export default function Dashboard() {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
-                  <button 
+                  <button
                     onClick={() => navigateTo('validation')}
                     className="relative overflow-hidden px-8 py-4 text-center text-base font-semibold text-white bg-brand hover:bg-brand-dark rounded-xl shadow-lg shadow-brand/20 hover:shadow-brand/35 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 group"
                   >
@@ -489,7 +252,7 @@ export default function Dashboard() {
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </button>
 
-                  <button 
+                  <button
                     onClick={() => setShowDemoModal(true)}
                     className="flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl text-base font-semibold text-slate-700 hover:text-slate-950 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-sm transition-all duration-200"
                   >
@@ -519,11 +282,11 @@ export default function Dashboard() {
               {/* Right Column: Pre-processing Hub Card */}
               <div className="lg:col-span-5 flex justify-center">
                 <div className="w-full max-w-md bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/40 p-6 sm:p-8 space-y-6 sm:space-y-8 transform hover:scale-[1.01] transition-transform duration-300">
-                  
+
                   {/* Preprocessing State Header */}
                   <div className="relative overflow-hidden rounded-2xl bg-[#E6F0FF] p-5 border border-brand/10 group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full blur-xl -z-10"></div>
-                    
+
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-white text-brand shadow-sm">
                         {scanStep === 5 ? (
@@ -534,7 +297,7 @@ export default function Dashboard() {
                           <Cpu className="w-6 h-6 text-brand" />
                         )}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         {scanStep === 0 && (
                           <>
@@ -566,7 +329,7 @@ export default function Dashboard() {
                     {/* Progress Bar */}
                     {scanning && (
                       <div className="w-full bg-slate-200/80 h-1.5 rounded-full mt-4 overflow-hidden">
-                        <div 
+                        <div
                           className="bg-brand h-full rounded-full transition-all duration-150"
                           style={{ width: `${scanProgress}%` }}
                         ></div>
@@ -579,8 +342,8 @@ export default function Dashboard() {
                     <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Pre-processing Hub</span>
                       {scanStep > 0 && (
-                        <button 
-                          onClick={handleResetScan} 
+                        <button
+                          onClick={handleResetScan}
                           className="text-xs font-semibold text-slate-500 hover:text-brand flex items-center gap-1 transition-colors"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
@@ -666,14 +429,13 @@ export default function Dashboard() {
                   </div>
 
                   {/* Validate CTA Button */}
-                  <button 
+                  <button
                     disabled={scanStep !== 5}
                     onClick={() => alert('AI Diagnostic complete! Bounding boxes rendered in next section.')}
-                    className={`w-full py-4 text-center text-sm font-bold tracking-wider rounded-2xl flex items-center justify-center gap-2.5 shadow-lg border transition-all duration-300 ${
-                      scanStep === 5 
-                        ? 'bg-brand text-white border-brand shadow-brand/25 hover:shadow-brand/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]' 
+                    className={`w-full py-4 text-center text-sm font-bold tracking-wider rounded-2xl flex items-center justify-center gap-2.5 shadow-lg border transition-all duration-300 ${scanStep === 5
+                        ? 'bg-brand text-white border-brand shadow-brand/25 hover:shadow-brand/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]'
                         : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed shadow-none'
-                    }`}
+                      }`}
                   >
                     <ShieldCheck className="w-5 h-5" />
                     <span>VALIDATED FOR AI ANALYSIS</span>
@@ -690,13 +452,13 @@ export default function Dashboard() {
         {/* SECTION 2: AI DIAGNOSTIC ENGINE (DARK THEME) */}
         {/* ========================================================================= */}
         <section id="analysis" className="bg-[#090D1A] py-20 sm:py-24 text-white relative overflow-hidden">
-          
+
           {/* Subtle Ambient Lighting */}
           <div className="absolute top-1/2 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-indigo-500/10 to-transparent rounded-full blur-3xl -z-10"></div>
           <div className="absolute top-1/4 right-0 w-[300px] h-[300px] bg-gradient-to-bl from-brand/10 to-transparent rounded-full blur-3xl -z-10"></div>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            
+
             {/* Header copy */}
             <div className="text-center max-w-3xl mx-auto space-y-4 mb-16 sm:mb-20">
               <span className="text-xs font-bold tracking-wider text-brand uppercase">AI Diagnostic Engine</span>
@@ -710,14 +472,14 @@ export default function Dashboard() {
 
             {/* Grid Content */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              
+
               {/* Left Column: Dental Clinic Bounding Box Visualizer */}
               <div className="lg:col-span-7 flex flex-col justify-between">
                 <div className="relative w-full aspect-[1.8/1] rounded-3xl bg-slate-950 border border-white/5 overflow-hidden shadow-2xl group flex items-center justify-center">
-                  
+
                   {/* Custom CSS Stylized Dental Clinic Image/Mockup */}
                   <div className="absolute inset-0 bg-[#1e2330] flex items-center justify-center overflow-hidden">
-                    
+
                     {/* SVG Backdrop representing clinic monitor structure */}
                     <svg className="absolute inset-0 w-full h-full opacity-40" xmlns="http://www.w3.org/2000/svg">
                       <defs>
@@ -734,7 +496,7 @@ export default function Dashboard() {
 
                     {/* Vector representation of teeth / Dental X-Ray */}
                     <div className="relative w-5/6 h-5/6 flex flex-col justify-center items-center space-y-6">
-                      
+
                       {/* X-ray Screen Header Overlay */}
                       <div className="absolute top-2 left-4 flex items-center space-x-2 text-[10px] text-slate-500 font-mono">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
@@ -773,17 +535,16 @@ export default function Dashboard() {
                     </div>
 
                     {/* INTERACTIVE BOUNDING BOXES OVERLAY */}
-                    
+
                     {/* Bounding Box 1: Caries */}
-                    <div 
+                    <div
                       onMouseEnter={() => { setHoveredBox('caries'); setSelectedCase('caries'); }}
                       onMouseLeave={() => setHoveredBox(null)}
                       onClick={() => setSelectedCase('caries')}
-                      className={`absolute cursor-pointer rounded border-2 transition-all duration-200 ${
-                        hoveredBox === 'caries' || selectedCase === 'caries'
+                      className={`absolute cursor-pointer rounded border-2 transition-all duration-200 ${hoveredBox === 'caries' || selectedCase === 'caries'
                           ? 'border-brand bg-brand/10 shadow-lg shadow-brand/35 z-10 scale-105'
                           : 'border-slate-500/60 bg-transparent'
-                      }`}
+                        }`}
                       style={{ left: '32%', top: '38%', width: '13%', height: '30%' }}
                     >
                       <span className="absolute -top-6 left-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-white bg-brand shadow">
@@ -792,15 +553,14 @@ export default function Dashboard() {
                     </div>
 
                     {/* Bounding Box 2: Bone Loss */}
-                    <div 
+                    <div
                       onMouseEnter={() => { setHoveredBox('bone_loss'); setSelectedCase('bone_loss'); }}
                       onMouseLeave={() => setHoveredBox(null)}
                       onClick={() => setSelectedCase('bone_loss')}
-                      className={`absolute cursor-pointer rounded border-2 transition-all duration-200 ${
-                        hoveredBox === 'bone_loss' || selectedCase === 'bone_loss'
+                      className={`absolute cursor-pointer rounded border-2 transition-all duration-200 ${hoveredBox === 'bone_loss' || selectedCase === 'bone_loss'
                           ? 'border-brand bg-brand/10 shadow-lg shadow-brand/35 z-10 scale-105'
                           : 'border-slate-500/60 bg-transparent'
-                      }`}
+                        }`}
                       style={{ left: '50%', top: '44%', width: '25%', height: '24%' }}
                     >
                       <span className="absolute -top-6 left-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-white bg-brand shadow">
@@ -809,15 +569,14 @@ export default function Dashboard() {
                     </div>
 
                     {/* Bounding Box 3: Wisdom Molar */}
-                    <div 
+                    <div
                       onMouseEnter={() => { setHoveredBox('molar'); setSelectedCase('molar'); }}
                       onMouseLeave={() => setHoveredBox(null)}
                       onClick={() => setSelectedCase('molar')}
-                      className={`absolute cursor-pointer rounded border-2 transition-all duration-200 ${
-                        hoveredBox === 'molar' || selectedCase === 'molar'
+                      className={`absolute cursor-pointer rounded border-2 transition-all duration-200 ${hoveredBox === 'molar' || selectedCase === 'molar'
                           ? 'border-brand bg-brand/10 shadow-lg shadow-brand/35 z-10 scale-105'
                           : 'border-slate-500/60 bg-transparent'
-                      }`}
+                        }`}
                       style={{ left: '80%', top: '35%', width: '14%', height: '36%' }}
                     >
                       <span className="absolute -top-6 left-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-white bg-brand shadow">
@@ -844,33 +603,30 @@ export default function Dashboard() {
 
                 {/* Clickable Quick Filters */}
                 <div className="flex flex-wrap gap-2 mt-4">
-                  <button 
+                  <button
                     onClick={() => setSelectedCase('bone_loss')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${
-                      selectedCase === 'bone_loss' 
-                        ? 'bg-brand/15 text-brand border-brand/30 shadow shadow-brand/5' 
+                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${selectedCase === 'bone_loss'
+                        ? 'bg-brand/15 text-brand border-brand/30 shadow shadow-brand/5'
                         : 'bg-slate-900/40 text-slate-400 border-slate-800/60 hover:text-slate-200'
-                    }`}
+                      }`}
                   >
                     Periodontal Bone Loss (ID: RX_82138)
                   </button>
-                  <button 
+                  <button
                     onClick={() => setSelectedCase('caries')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${
-                      selectedCase === 'caries' 
-                        ? 'bg-brand/15 text-brand border-brand/30 shadow shadow-brand/5' 
+                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${selectedCase === 'caries'
+                        ? 'bg-brand/15 text-brand border-brand/30 shadow shadow-brand/5'
                         : 'bg-slate-900/40 text-slate-400 border-slate-800/60 hover:text-slate-200'
-                    }`}
+                      }`}
                   >
                     Dental Caries (ID: RX_94102)
                   </button>
-                  <button 
+                  <button
                     onClick={() => setSelectedCase('molar')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${
-                      selectedCase === 'molar' 
-                        ? 'bg-brand/15 text-brand border-brand/30 shadow shadow-brand/5' 
+                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${selectedCase === 'molar'
+                        ? 'bg-brand/15 text-brand border-brand/30 shadow shadow-brand/5'
                         : 'bg-slate-900/40 text-slate-400 border-slate-800/60 hover:text-slate-200'
-                    }`}
+                      }`}
                   >
                     Impacted Wisdom Molar (ID: RX_33019)
                   </button>
@@ -880,7 +636,7 @@ export default function Dashboard() {
               {/* Right Column: Case Analysis Card */}
               <div className="lg:col-span-5 flex items-stretch">
                 <div className="w-full bg-white rounded-3xl p-6 sm:p-8 flex flex-col justify-between text-slate-800 border border-slate-100 shadow-xl transition-all duration-300">
-                  
+
                   {/* Title Area */}
                   <div className="space-y-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Case Analysis</span>
@@ -896,13 +652,13 @@ export default function Dashboard() {
                         {/* Background track circle */}
                         <circle cx="40" cy="40" r="34" stroke="#F1F5F9" strokeWidth="6" fill="transparent" />
                         {/* Foreground circle */}
-                        <circle 
-                          cx="40" 
-                          cy="40" 
-                          r="34" 
-                          stroke="#0066FF" 
-                          strokeWidth="6" 
-                          fill="transparent" 
+                        <circle
+                          cx="40"
+                          cy="40"
+                          r="34"
+                          stroke="#0066FF"
+                          strokeWidth="6"
+                          fill="transparent"
                           strokeDasharray={2 * Math.PI * 34}
                           strokeDashoffset={2 * Math.PI * 34 * (1 - currentCase.confidence / 100)}
                           strokeLinecap="round"
@@ -922,9 +678,8 @@ export default function Dashboard() {
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-between items-center text-xs font-bold text-slate-700 uppercase tracking-wider">
                       <span>Disease Level</span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] ${
-                        currentCase.level === 'severe' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded text-[10px] ${currentCase.level === 'severe' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                        }`}>
                         {currentCase.level === 'severe' ? 'LEVEL 3' : 'LEVEL 2'}
                       </span>
                     </div>
@@ -933,7 +688,7 @@ export default function Dashboard() {
                     <div className="relative h-6 flex items-center">
                       {/* Line background */}
                       <div className="absolute inset-x-0 h-2 bg-slate-100 rounded-full"></div>
-                      
+
                       {/* Filled portions segments */}
                       <div className="absolute left-0 w-full h-2 rounded-full flex overflow-hidden">
                         <div className="w-1/3 bg-emerald-400/80"></div>
@@ -942,9 +697,9 @@ export default function Dashboard() {
                       </div>
 
                       {/* Slider handle anchor */}
-                      <div 
+                      <div
                         className="absolute w-4.5 h-4.5 rounded-full border-2 border-white shadow bg-brand transition-all duration-300"
-                        style={{ 
+                        style={{
                           left: currentCase.level === 'severe' ? '85%' : currentCase.level === 'moderate' ? '50%' : '15%',
                           transform: 'translateX(-50%)'
                         }}
@@ -962,7 +717,7 @@ export default function Dashboard() {
                   {/* Detected Anomalies */}
                   <div className="space-y-3.5">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Detected Anomalies ({currentCase.anomalies.length})</span>
-                    
+
                     <div className="space-y-2">
                       {currentCase.anomalies.map((anom, idx) => (
                         <div key={idx} className="flex justify-between items-center p-3 rounded-xl border border-slate-100 hover:border-slate-200/80 hover:bg-slate-50/50 transition-all duration-200">
@@ -991,7 +746,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         <section id="trends" className="py-20 sm:py-24 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            
+
             {/* Header copy */}
             <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
               <span className="text-xs font-bold tracking-wider text-brand uppercase">Patient Journey</span>
@@ -1005,13 +760,12 @@ export default function Dashboard() {
               <div className="flex items-center space-x-4">
                 {timelineDates.map((item, idx) => (
                   <div key={idx} className="flex items-center">
-                    <button 
+                    <button
                       onClick={() => setActiveDate(item.label)}
-                      className={`relative flex flex-col items-center justify-between p-4 w-32 h-24 rounded-2xl border transition-all duration-200 shrink-0 ${
-                        activeDate === item.label
+                      className={`relative flex flex-col items-center justify-between p-4 w-32 h-24 rounded-2xl border transition-all duration-200 shrink-0 ${activeDate === item.label
                           ? 'bg-white border-brand ring-2 ring-brand/10 shadow-lg scale-105 z-10'
                           : 'bg-white/80 border-slate-200 hover:bg-white hover:border-slate-300'
-                      }`}
+                        }`}
                     >
                       {/* Mini X-Ray Illustration inside thumbnails */}
                       <div className="w-full h-8 bg-slate-100 rounded-md border border-slate-200/50 flex items-center justify-center overflow-hidden">
@@ -1023,7 +777,7 @@ export default function Dashboard() {
                           <path d="M 80 16 Q 84 10 88 16" fill="#CBD5E1" stroke="#94A3B8" strokeWidth="0.5" />
                         </svg>
                       </div>
-                      
+
                       <div className="flex flex-col items-center">
                         <span className="text-xs font-bold text-slate-700">{item.labelEn}</span>
                         {item.current && (
@@ -1041,11 +795,11 @@ export default function Dashboard() {
 
             {/* Comparison Area Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              
+
               {/* Left Column: Visual Progression Slider (2024 vs 2026) */}
               <div className="lg:col-span-7 flex flex-col justify-between">
                 <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xl flex flex-col justify-between h-full">
-                  
+
                   <div className="flex justify-between items-center mb-6">
                     <div>
                       <h3 className="text-lg font-bold text-slate-900">Visual Progression (2024 vs 2026)</h3>
@@ -1054,7 +808,7 @@ export default function Dashboard() {
                   </div>
 
                   {/* Real Comparison Slider container */}
-                  <div 
+                  <div
                     ref={sliderRef}
                     onMouseMove={handleMouseMove}
                     onTouchMove={handleTouchMove}
@@ -1063,7 +817,7 @@ export default function Dashboard() {
                     {/* Background Slide: May 2026 (Anomalous / recession) */}
                     <div className="absolute inset-0 bg-[#0F172A] flex items-center justify-center">
                       <div className="relative w-full h-full">
-                        
+
                         {/* Label Badge 2026 */}
                         <div className="absolute top-4 right-4 z-10 px-3 py-1 bg-brand text-white text-[10px] font-bold rounded-lg tracking-wider">
                           May 2026
@@ -1099,7 +853,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Foreground Slide (Clip-path container): Mar 2024 (Healthy / baseline) */}
-                    <div 
+                    <div
                       className="absolute inset-0 bg-[#1E293B] border-r border-white/20 select-none pointer-events-none"
                       style={{ clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)` }}
                     >
@@ -1135,7 +889,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Drag Slider Handle bar */}
-                    <div 
+                    <div
                       className="absolute inset-y-0 w-0.5 bg-brand/80 cursor-ew-resize z-20"
                       style={{ left: `${sliderPosition}%` }}
                       onMouseDown={(e) => { e.preventDefault(); isDragging.current = true; }}
@@ -1156,7 +910,7 @@ export default function Dashboard() {
 
               {/* Right Column: Alerts & Bone Density line chart */}
               <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
-                
+
                 {/* Alert Box */}
                 <div className="p-5 rounded-2xl bg-rose-50 border border-rose-100 flex items-start space-x-4">
                   <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-rose-100 text-rose-600 shrink-0 shadow-sm">
@@ -1200,17 +954,17 @@ export default function Dashboard() {
                       <line x1="0" y1="90" x2="300" y2="90" stroke="#F1F5F9" strokeWidth="1" />
 
                       {/* Area under curve */}
-                      <path 
-                        d="M 0 30 L 50 35 L 100 45 L 150 48 L 200 62 L 250 69 L 300 78 L 300 120 L 0 120 Z" 
-                        fill="url(#chart-area)" 
+                      <path
+                        d="M 0 30 L 50 35 L 100 45 L 150 48 L 200 62 L 250 69 L 300 78 L 300 120 L 0 120 Z"
+                        fill="url(#chart-area)"
                       />
 
                       {/* Line chart stroke */}
-                      <path 
-                        d="M 0 30 L 50 35 L 100 45 L 150 48 L 200 62 L 250 69 L 300 78" 
-                        fill="none" 
-                        stroke="#0066FF" 
-                        strokeWidth="2.5" 
+                      <path
+                        d="M 0 30 L 50 35 L 100 45 L 150 48 L 200 62 L 250 69 L 300 78"
+                        fill="none"
+                        stroke="#0066FF"
+                        strokeWidth="2.5"
                         strokeLinecap="round"
                       />
 
@@ -1250,7 +1004,7 @@ export default function Dashboard() {
       <Footer />
 
       {/* Floating Sparkle/AI Assistant Chat Button */}
-      <button 
+      <button
         onClick={() => alert('DentiScan AI Assistant is here to review case files with you!')}
         className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-brand to-indigo-600 text-white flex items-center justify-center shadow-xl shadow-brand/20 hover:shadow-brand/35 hover:-translate-y-1 transform active:scale-95 transition-all duration-200 group"
         aria-label="AI Assistant"
@@ -1267,11 +1021,11 @@ export default function Dashboard() {
       {showDemoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
-          <div 
+          <div
             onClick={() => setShowDemoModal(false)}
             className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity duration-300"
           ></div>
-          
+
           {/* Modal Content */}
           <div className="relative w-full max-w-2xl bg-[#090D1A] text-white border border-white/10 rounded-3xl overflow-hidden shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center pb-2 border-b border-white/10">
@@ -1279,14 +1033,14 @@ export default function Dashboard() {
                 <Sparkles className="w-5 h-5 text-brand" />
                 DentiScan Diagnostic Platform Demo
               </h3>
-              <button 
+              <button
                 onClick={() => setShowDemoModal(false)}
                 className="text-slate-400 hover:text-white transition-colors p-1 hover:bg-white/5 rounded-lg"
               >
                 Close [X]
               </button>
             </div>
-            
+
             {/* Mock Video Container */}
             <div className="relative aspect-video rounded-2xl bg-black border border-white/5 flex items-center justify-center overflow-hidden group">
               {/* Play symbol placeholder */}
