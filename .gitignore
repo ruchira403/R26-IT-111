@@ -1,0 +1,34 @@
+# Python
+**/venv/
+**/.venv/
+**/__pycache__/
+*.py[cod]
+
+# Environment
+**/.env
+**/.env.*
+
+# Node
+**/node_modules/
+
+# ML Models
+*.pt
+*.pth
+*.onnx
+*.h5
+*.keras
+
+# Project generated folders
+Xora_Scan/01_Dataset/
+Xora_Scan/02_Models/
+Xora_Scan/04_Backend/uploads/
+Xora_Scan/04_Backend/venv/
+
+# Build
+dist/
+dist-ssr/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
