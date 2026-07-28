@@ -6,6 +6,12 @@ import { predictSchema } from "./health-advisor.schema";
 
 const router = Router();
 
+router.get(
+  "/latest-dental-scan",
+  authGuard.anyAuthenticated,
+  healthAdvisorController.getLatestDentalScan,
+);
+
 router.post(
   "/predict",
   authGuard.anyAuthenticated,

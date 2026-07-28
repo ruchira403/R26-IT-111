@@ -9,6 +9,38 @@ type PredictInput = {
 };
 
 export const healthAdvisorService = {
+  async getLatestDentalScan(userId: number) {
+    const dentalRecord = await prisma.dental_records.findFirst({
+      where: { user_id: userId },
+      orderBy: [
+        { created_at: "desc" },
+        { id: "desc" },
+      ],
+    });
+
+    if (!dentalRecord) {
+      throw new AuthError(404, "No dental scans found for this user");
+    }
+
+    const detectedDiseases = await prisma.detected_diseases.findMany({
+      where: { record_id: dentalRecord.id },
+      select: {
+        id: true,
+        record_id: true,
+        disease_type: true,
+        severity_level: true,
+        confidence: true,
+        created_at: true,
+      },
+      orderBy: { id: "asc" },
+    });
+
+    return {
+      dentalRecord,
+      detectedDiseases,
+    };
+  },
+
   async predict(userId: number, input: PredictInput) {
     const profile = await prisma.healthProfile.findUnique({
       where: { userId },

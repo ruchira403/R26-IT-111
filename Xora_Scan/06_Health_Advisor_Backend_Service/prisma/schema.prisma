@@ -8,14 +8,15 @@ datasource db {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  email         String         @unique @db.VarChar(255)
-  passwordHash  String         @map("password_hash") @db.Text
-  role          String         @default("USER") @db.VarChar(50)
-  isActive      Boolean        @default(true) @map("is_active")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  healthProfile HealthProfile?
+  id             Int            @id @default(autoincrement())
+  email          String         @unique @db.VarChar(255)
+  passwordHash   String         @map("password_hash")
+  role           String         @default("USER") @db.VarChar(50)
+  isActive       Boolean        @default(true) @map("is_active")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @default(now()) @updatedAt @map("updated_at")
+  health_profile Json?
+  healthProfile  HealthProfile?
 
   @@map("users")
 }
@@ -40,8 +41,30 @@ model HealthProfile {
   overallOralHygieneLevel    String   @map("overall_oral_hygiene_level") @db.VarChar(20)
   preferredLanguage          String   @default("en") @map("preferred_language") @db.VarChar(10)
   createdAt                  DateTime @default(now()) @map("created_at")
-  updatedAt                  DateTime @updatedAt @map("updated_at")
+  updatedAt                  DateTime @default(now()) @updatedAt @map("updated_at")
   user                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("health_profiles")
+}
+
+model dental_records {
+  id                Int                 @id @default(autoincrement())
+  image_path        String              @db.VarChar(255)
+  quality_score     Float
+  confidence_score  Float
+  exposure          String?             @db.VarChar(50)
+  is_blurred        Boolean?
+  created_at        DateTime?           @default(now()) @db.Timestamp(6)
+  user_id           Int?
+  detected_diseases detected_diseases[]
+}
+
+model detected_diseases {
+  id             Int             @id @default(autoincrement())
+  record_id      Int?
+  disease_type   String          @db.VarChar(100)
+  severity_level String?         @db.VarChar(50)
+  confidence     Float
+  created_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  dental_records dental_records? @relation(fields: [record_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }

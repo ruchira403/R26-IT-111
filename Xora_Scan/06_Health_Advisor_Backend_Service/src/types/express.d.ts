@@ -1,6 +1,9 @@
 import type { User } from "@prisma/client";
 
-export type AuthenticatedUser = Omit<User, "passwordHash">;
+export type AuthenticatedUser = Pick<
+  User,
+  "id" | "email" | "role" | "isActive" | "createdAt" | "updatedAt"
+>;
 
 declare global {
   namespace Express {

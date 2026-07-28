@@ -1,7 +1,9 @@
 //contain all the variables that are used in the project
 import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({
+  path: [".env", "env"],
+});
 
 const config = {
   server: {
