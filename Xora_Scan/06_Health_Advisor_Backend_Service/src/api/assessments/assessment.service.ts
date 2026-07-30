@@ -38,6 +38,12 @@ const SEVERITY_PRIORITY: Record<string, number> = {
 };
 
 type JsonResponse = Prisma.InputJsonValue;
+type DentalRecordWithAssessmentData = Prisma.dental_recordsGetPayload<{
+  include: {
+    detected_diseases: true;
+    risk_assessments: true;
+  };
+}>;
 
 export class RiskAssessmentError extends Error {
   constructor(
@@ -84,6 +90,28 @@ export async function getLatestDentalRecord(userId: number) {
       404,
       "DENTAL_RECORD_NOT_FOUND",
       "No dental scan was found for your account.",
+    );
+  }
+
+  return dentalRecord;
+}
+
+export async function getDentalRecordForUser(
+  userId: number,
+  dentalRecordId: number,
+) {
+  const dentalRecord = await prisma.dental_records.findFirst({
+    where: {
+      id: dentalRecordId,
+      user_id: userId,
+    },
+  });
+
+  if (!dentalRecord) {
+    throw new RiskAssessmentError(
+      404,
+      "DENTAL_RECORD_NOT_FOUND",
+      "The requested dental scan was not found for your account.",
     );
   }
 
@@ -384,6 +412,23 @@ export async function checkExistingAssessment(
   });
 }
 
+export async function checkExistingAssessmentForScan(
+  userId: number,
+  dentalRecordId: number,
+) {
+  return prisma.risk_assessments.findFirst({
+    where: {
+      user_id: userId,
+      dental_record_id: dentalRecordId,
+      assessment_status: "SUCCESS",
+    },
+    orderBy: [
+      { created_at: "desc" },
+      { id: "desc" },
+    ],
+  });
+}
+
 export function generateAssessmentCode(id: number): string {
   return `RA${id.toString().padStart(6, "0")}`;
 }
@@ -539,21 +584,151 @@ export function formatAssessmentResponse(assessment: SavedAssessment) {
   };
 }
 
+export function formatScanResponse(
+  scan: DentalRecordWithAssessmentData,
+  includeAssessments = false,
+) {
+  const successfulAssessments = scan.risk_assessments.map(
+    formatAssessmentResponse,
+  );
+
+  return {
+    id: scan.id,
+    image_path: scan.image_path,
+    quality_score: scan.quality_score,
+    confidence_score: scan.confidence_score,
+    exposure: scan.exposure,
+    is_blurred: scan.is_blurred,
+    created_at: scan.created_at,
+    user_id: scan.user_id,
+    detected_diseases: scan.detected_diseases.map((disease) => ({
+      id: disease.id,
+      record_id: disease.record_id,
+      disease_type: disease.disease_type,
+      severity_level: disease.severity_level,
+      confidence: disease.confidence,
+      created_at: disease.created_at,
+    })),
+    assessed: successfulAssessments.length > 0,
+    ...(includeAssessments
+      ? { assessments: successfulAssessments }
+      : {}),
+  };
+}
+
+async function generateAssessmentForRecord(
+  userId: number,
+  dentalRecord: { id: number },
+) {
+  const detectedDiseases = await getRelatedDetectedDiseases(dentalRecord.id);
+  const selectedDisease =
+    selectDetectedDiseaseForInitialAssessment(detectedDiseases);
+
+  validateDetectedDisease(selectedDisease);
+
+  const existingAssessment = await checkExistingAssessment(
+    userId,
+    dentalRecord.id,
+    selectedDisease.id,
+  );
+
+  if (existingAssessment) {
+    return {
+      source: "existing" as const,
+      assessment: formatAssessmentResponse(existingAssessment),
+    };
+  }
+
+  const healthProfile = await getHealthProfile(userId);
+  const mappedHealthProfile = mapHealthProfile(healthProfile);
+  const affectedTeethCount = getAffectedTeethCount();
+  const payload = prepareFinalWebhookPayload(
+    mappedHealthProfile,
+    selectedDisease,
+    affectedTeethCount,
+  );
+
+  validatePreparedPayload(payload);
+
+  const webhookResult = await callRiskAssessmentWebhook(payload);
+  const assessment = await saveAssessment(
+    userId,
+    dentalRecord.id,
+    selectedDisease.id,
+    payload,
+    webhookResult,
+  );
+
+  return {
+    source: "generated" as const,
+    assessment: formatAssessmentResponse(assessment),
+  };
+}
+
 export const assessmentService = {
-  async createInitialAssessment(userId: number) {
-    const dentalRecord = await getLatestDentalRecord(userId);
-    const detectedDiseases = await getRelatedDetectedDiseases(dentalRecord.id);
-    const selectedDisease =
-      selectDetectedDiseaseForInitialAssessment(detectedDiseases);
+  async listMyScans(userId: number) {
+    const scans = await prisma.dental_records.findMany({
+      where: { user_id: userId },
+      include: {
+        detected_diseases: {
+          orderBy: { id: "asc" },
+        },
+        risk_assessments: {
+          where: { assessment_status: "SUCCESS" },
+          orderBy: [
+            { created_at: "desc" },
+            { id: "desc" },
+          ],
+        },
+      },
+      orderBy: [
+        { created_at: "desc" },
+        { id: "desc" },
+      ],
+    });
 
-    validateDetectedDisease(selectedDisease);
+    return scans.map((scan) => formatScanResponse(scan));
+  },
 
-    const healthProfile = await getHealthProfile(userId);
-    const mappedHealthProfile = mapHealthProfile(healthProfile);
-    const existingAssessment = await checkExistingAssessment(
+  async getMyScanById(userId: number, dentalRecordId: number) {
+    const scan = await prisma.dental_records.findFirst({
+      where: {
+        id: dentalRecordId,
+        user_id: userId,
+      },
+      include: {
+        detected_diseases: {
+          orderBy: { id: "asc" },
+        },
+        risk_assessments: {
+          where: { assessment_status: "SUCCESS" },
+          orderBy: [
+            { created_at: "desc" },
+            { id: "desc" },
+          ],
+        },
+      },
+    });
+
+    if (!scan) {
+      throw new RiskAssessmentError(
+        404,
+        "DENTAL_RECORD_NOT_FOUND",
+        "The requested dental scan was not found for your account.",
+      );
+    }
+
+    return formatScanResponse(scan, true);
+  },
+
+  async assessSelectedScan(userId: number, dentalRecordId: number) {
+    const dentalRecord = await getDentalRecordForUser(
+      userId,
+      dentalRecordId,
+    );
+    const existingAssessment = await checkExistingAssessmentForScan(
       userId,
       dentalRecord.id,
-      selectedDisease.id,
     );
 
     if (existingAssessment) {
@@ -563,27 +738,12 @@ export const assessmentService = {
       };
     }
 
-    const affectedTeethCount = getAffectedTeethCount();
-    const payload = prepareFinalWebhookPayload(
-      mappedHealthProfile,
-      selectedDisease,
-      affectedTeethCount,
-    );
+    return generateAssessmentForRecord(userId, dentalRecord);
+  },
 
-    validatePreparedPayload(payload);
+  async createInitialAssessment(userId: number) {
+    const dentalRecord = await getLatestDentalRecord(userId);
 
-    const webhookResult = await callRiskAssessmentWebhook(payload);
-    const assessment = await saveAssessment(
-      userId,
-      dentalRecord.id,
-      selectedDisease.id,
-      payload,
-      webhookResult,
-    );
-
-    return {
-      source: "generated" as const,
-      assessment: formatAssessmentResponse(assessment),
-    };
+    return generateAssessmentForRecord(userId, dentalRecord);
   },
 };
