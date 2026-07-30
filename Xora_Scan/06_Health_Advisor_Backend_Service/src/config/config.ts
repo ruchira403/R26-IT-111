@@ -30,6 +30,9 @@ const config = {
 
   n8n: {
     webhookUrl: process.env.N8N_WEBHOOK_URL,
+    riskAssessmentWebhookUrl: process.env.N8N_RISK_ASSESSMENT_WEBHOOK_URL,
+    riskAssessmentTimeoutMs:
+      Number(process.env.N8N_RISK_ASSESSMENT_TIMEOUT_MS) || 120_000,
   },
 
   security: {

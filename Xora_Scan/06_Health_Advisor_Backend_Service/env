@@ -3,3 +3,5 @@ PORT=8000
 JWT_ACCESS_SECRET=6SKKrCCd8UHsZVrklkhKPgey0yp8XEfh
 JWT_REFRESH_SECRET=WhTQvCFDQvlRc2C3ucMkIbGr60odWxKc
 REDIS_URL=redis://default:9rlFD0XBK05X4hukbbIiybWcEfEJI4a5@bone-ultraviolet-shoes-50880.db.redis.io:14478
+N8N_RISK_ASSESSMENT_WEBHOOK_URL=https://xora.app.n8n.cloud/webhook-test/research_webhook
+N8N_RISK_ASSESSMENT_TIMEOUT_MS=120000

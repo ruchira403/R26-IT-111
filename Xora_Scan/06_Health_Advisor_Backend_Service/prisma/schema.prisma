@@ -8,15 +8,16 @@ datasource db {
 }
 
 model User {
-  id             Int            @id @default(autoincrement())
-  email          String         @unique @db.VarChar(255)
-  passwordHash   String         @map("password_hash")
-  role           String         @default("USER") @db.VarChar(50)
-  isActive       Boolean        @default(true) @map("is_active")
-  createdAt      DateTime       @default(now()) @map("created_at")
-  updatedAt      DateTime       @default(now()) @updatedAt @map("updated_at")
-  health_profile Json?
-  healthProfile  HealthProfile?
+  id               Int                @id @default(autoincrement())
+  email            String             @unique @db.VarChar(255)
+  passwordHash     String             @map("password_hash")
+  role             String             @default("USER") @db.VarChar(50)
+  isActive         Boolean            @default(true) @map("is_active")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @default(now()) @updatedAt @map("updated_at")
+  health_profile   Json?
+  healthProfile    HealthProfile?
+  risk_assessments risk_assessments[]
 
   @@map("users")
 }
@@ -57,14 +58,34 @@ model dental_records {
   created_at        DateTime?           @default(now()) @db.Timestamp(6)
   user_id           Int?
   detected_diseases detected_diseases[]
+  risk_assessments  risk_assessments[]
 }
 
 model detected_diseases {
-  id             Int             @id @default(autoincrement())
-  record_id      Int?
-  disease_type   String          @db.VarChar(100)
-  severity_level String?         @db.VarChar(50)
-  confidence     Float
-  created_at     DateTime?       @default(now()) @db.Timestamptz(6)
-  dental_records dental_records? @relation(fields: [record_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id               Int                @id @default(autoincrement())
+  record_id        Int?
+  disease_type     String             @db.VarChar(100)
+  severity_level   String?            @db.VarChar(50)
+  confidence       Float
+  created_at       DateTime?          @default(now()) @db.Timestamptz(6)
+  dental_records   dental_records?    @relation(fields: [record_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  risk_assessments risk_assessments[]
+}
+
+model risk_assessments {
+  id                  Int               @id @default(autoincrement())
+  code                String            @unique @db.VarChar(50)
+  user_id             Int
+  dental_record_id    Int
+  detected_disease_id Int
+  assessment_status   String            @default("SUCCESS") @db.VarChar(30)
+  input_snapshot      Json
+  assessment_result   Json
+  created_at          DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime          @default(now()) @db.Timestamptz(6)
+  dental_records      dental_records    @relation(fields: [dental_record_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  detected_diseases   detected_diseases @relation(fields: [detected_disease_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users               User              @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, dental_record_id, detected_disease_id], map: "risk_assessments_unique_detection")
 }

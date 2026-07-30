@@ -1,8 +1,16 @@
 import type { Request, Response } from "express";
+import { RiskAssessmentError } from "../assessments/assessment.service";
 import { AuthError, formatUser } from "../auth/auth.service";
 import { healthAdvisorService } from "./health-advisor.service";
 
 function handlePredictError(error: unknown, res: Response) {
+  if (error instanceof RiskAssessmentError) {
+    return res.status(error.statusCode).json({
+      success: false,
+      message: error.message,
+    });
+  }
+
   if (error instanceof AuthError) {
     return res.status(error.statusCode).json({
       success: false,

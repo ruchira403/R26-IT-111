@@ -1,5 +1,9 @@
 import config from "../../config/config";
 import { prisma } from "../../config/database";
+import {
+  getLatestDentalRecord,
+  getRelatedDetectedDiseases,
+} from "../assessments/assessment.service";
 import { AuthError, formatHealthProfile } from "../auth/auth.service";
 
 type PredictInput = {
@@ -10,30 +14,11 @@ type PredictInput = {
 
 export const healthAdvisorService = {
   async getLatestDentalScan(userId: number) {
-    const dentalRecord = await prisma.dental_records.findFirst({
-      where: { user_id: userId },
-      orderBy: [
-        { created_at: "desc" },
-        { id: "desc" },
-      ],
-    });
-
-    if (!dentalRecord) {
-      throw new AuthError(404, "No dental scans found for this user");
-    }
-
-    const detectedDiseases = await prisma.detected_diseases.findMany({
-      where: { record_id: dentalRecord.id },
-      select: {
-        id: true,
-        record_id: true,
-        disease_type: true,
-        severity_level: true,
-        confidence: true,
-        created_at: true,
-      },
-      orderBy: { id: "asc" },
-    });
+    const dentalRecord = await getLatestDentalRecord(userId);
+    const detectedDiseases = await getRelatedDetectedDiseases(
+      dentalRecord.id,
+      false,
+    );
 
     return {
       dentalRecord,
