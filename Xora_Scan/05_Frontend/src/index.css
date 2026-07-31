@@ -49,3 +49,64 @@ html, body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ── Scan History Feature ──────────────────────────────────── */
+
+.scan-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.scan-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px -8px rgba(0, 102, 255, 0.12);
+}
+.scan-card-hover:focus-visible {
+  outline: 2px solid #0066FF;
+  outline-offset: 2px;
+}
+
+/* Circular risk-score gauge */
+.risk-gauge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.risk-gauge svg {
+  transform: rotate(-90deg);
+}
+
+/* Stepper pulse animation */
+@keyframes stepPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.step-pulse {
+  animation: stepPulse 1.5s ease-in-out infinite;
+}
+
+/* Smooth accordion expand */
+.accordion-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 0.75rem;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .scan-card-hover { transition: none; }
+  .scan-card-hover:hover { transform: none; }
+  .step-pulse { animation: none; }
+  .skeleton { animation: none; }
+  .accordion-content { transition: none; }
+}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Menu, X, Sparkles, User, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Menu, X, Sparkles, User, LogOut, ClipboardList } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { usePage } from '../context/PageContext';
 import { getStoredToken, clearStoredAuth } from '../auth/useAuth';
 
@@ -8,6 +8,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { navigateTo } = usePage();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check auth state from localStorage
   const isLoggedIn = !!getStoredToken();
@@ -15,11 +16,24 @@ export default function Header() {
   const handleNavClick = (page, anchorId) => {
     navigateTo(page);
     setMobileMenuOpen(false);
+
     if (anchorId) {
-      setTimeout(() => {
-        const el = document.getElementById(anchorId);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      // If we're not on the home page, navigate there first then scroll
+      if (location.pathname !== '/') {
+        navigate('/');
+        // Wait for the page to mount, then scroll to the section
+        setTimeout(() => {
+          const el = document.getElementById(anchorId);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 400);
+      } else {
+        setTimeout(() => {
+          const el = document.getElementById(anchorId);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    } else if (location.pathname !== '/') {
+      navigate('/');
     }
   };
 
@@ -59,6 +73,20 @@ export default function Header() {
             >
               Patient Trends
             </button>
+            {isLoggedIn && (
+              <button
+                onClick={() => { setMobileMenuOpen(false); navigate('/scan-history'); }}
+                className={`flex items-center gap-1.5 transition-colors duration-200 py-2 cursor-pointer font-medium ${
+                  location.pathname.startsWith('/scan-history')
+                    ? 'text-brand'
+                    : 'text-slate-600 hover:text-brand'
+                }`}
+                id="header-scan-history-btn"
+              >
+                <ClipboardList className="w-4 h-4" />
+                Scan History
+              </button>
+            )}
           </nav>
 
           {/* Desktop Actions */}
@@ -132,6 +160,20 @@ export default function Header() {
             >
               Patient Trends
             </button>
+            {isLoggedIn && (
+              <button
+                onClick={() => { setMobileMenuOpen(false); navigate('/scan-history'); }}
+                className={`w-full text-left px-3 py-2 rounded-xl text-base font-medium transition-colors flex items-center gap-2 ${
+                  location.pathname.startsWith('/scan-history')
+                    ? 'text-brand bg-blue-50'
+                    : 'text-slate-700 hover:text-brand hover:bg-slate-50'
+                }`}
+                id="header-mobile-scan-history-btn"
+              >
+                <ClipboardList className="w-4 h-4" />
+                Scan History
+              </button>
+            )}
             <hr className="border-slate-100 my-2" />
             <div className="grid grid-cols-2 gap-3 pt-2">
               {isLoggedIn ? (
