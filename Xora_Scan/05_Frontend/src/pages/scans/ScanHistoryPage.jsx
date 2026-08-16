@@ -423,9 +423,9 @@ export default function ScanHistoryPage() {
                         <button
                           onClick={(e) => { e.stopPropagation(); handleGenerateAssessment(latestScan); }}
                           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-brand to-indigo-600 hover:from-brand-dark hover:to-indigo-700 shadow-md shadow-brand/20 transition-all"
-                          aria-label="Generate assessment for latest scan"
+                          aria-label="Analyse risk for latest scan"
                         >
-                          <Sparkles className="w-4 h-4" /> Generate Assessment
+                          <Sparkles className="w-4 h-4" /> Analyse Risk
                         </button>
                       )}
                       <button
@@ -594,9 +594,9 @@ function ScanCard({ scan, onClick, onViewAssessment, onGenerateAssessment, asses
               <button
                 onClick={(e) => { e.stopPropagation(); onGenerateAssessment(); }}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-brand to-indigo-600 hover:from-brand-dark hover:to-indigo-700 shadow-sm transition-all"
-                aria-label="Generate assessment"
+                aria-label="Analyse risk"
               >
-                <Sparkles className="w-3.5 h-3.5" /> Generate
+                <Sparkles className="w-3.5 h-3.5" /> Analyse Risk
               </button>
             )}
             <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-brand transition-colors hidden sm:block" />

@@ -16,7 +16,7 @@
     {
       "name": "dental-scan-model-backend",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "cd 'Xora_Scan/04_Backend' && source venv/bin/activate && python app.py"],
+      "runtimeArgs": ["-c", "'Xora_Scan/04_Backend/venv/bin/python' 'Xora_Scan/04_Backend/app.py'"],
       "port": 5000
     },
     {

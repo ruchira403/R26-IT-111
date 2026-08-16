@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   Upload,
@@ -22,11 +23,15 @@ import Footer from "../../components/Footer";
 import { usePage } from "../../context/PageContext";
 import { getStoredToken } from '../../auth/useAuth';
 import { CARIES_API_BASE_URL, MODEL_API_BASE_URL } from '../../auth/authConfig';
+import { assessScan } from '../../auth/scanApi';
+import RiskAssessmentIntroModal from '../scans/RiskAssessmentIntroModal';
+import AssessmentGenerationOverlay from '../scans/AssessmentGenerationOverlay';
 
 const ACCEPTED_FORMATS = "image/jpeg, image/png, image/webp";
 
 export default function CariesPage() {
   const { navigateTo, pageData } = usePage();
+  const navigate = useNavigate();
 
   // Pre-loaded data from Stage 1 (ValidationPage) 
   const passedBackend = pageData?.backendData ?? null;  // full backend payload
@@ -54,9 +59,14 @@ export default function CariesPage() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  // NEW STATES FOR DATABASE SAVING 
+  // NEW STATES FOR DATABASE SAVING
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Post-save risk assessment flow: saved scan -> intro modal -> generation overlay -> report
+  const [savedRecordId, setSavedRecordId] = useState(null);
+  const [showIntroModal, setShowIntroModal] = useState(false);
+  const [showGeneratingOverlay, setShowGeneratingOverlay] = useState(false);
 
   // Show either the fresh result (from a re-upload on this page) or the passed result
   const displayResult = freshResult ?? (hasPassedResult ? passedCaries : null);
@@ -183,13 +193,32 @@ export default function CariesPage() {
 
       if (response.data.success || response.data.status === "Success") {
         setSaveSuccess(true);
-        alert("🎉 Data successfully saved to the Shared Database with Severity Level!");
+        if (response.data.recordId) {
+          setSavedRecordId(response.data.recordId);
+          setShowIntroModal(true);
+        }
       }
     } catch (err) {
       console.error("Error saving to database:", err);
       alert(`❌ Failed to save data. Please ensure the Node.js backend is running at ${CARIES_API_BASE_URL}.`);
     } finally {
       setSaveLoading(false);
+    }
+  };
+
+  /** User confirmed the intro modal — hand off to the assessment generation overlay */
+  const handleStartAssessment = () => {
+    setShowIntroModal(false);
+    setShowGeneratingOverlay(true);
+  };
+
+  /** Assessment generated (or already existed) — go straight to the report */
+  const handleAssessmentSuccess = (assessment, source) => {
+    setShowGeneratingOverlay(false);
+    if (assessment && savedRecordId) {
+      navigate(`/scan-history/${savedRecordId}/assessment/${assessment.id}`, {
+        state: { assessment, source },
+      });
     }
   };
 
@@ -654,6 +683,23 @@ export default function CariesPage() {
       </main>
 
       <Footer />
+
+      {/* ── Post-save risk assessment flow ────────────────────────────── */}
+      <RiskAssessmentIntroModal
+        isOpen={showIntroModal}
+        onClose={() => setShowIntroModal(false)}
+        onStart={handleStartAssessment}
+        disease={displayResult?.diagnosis}
+        severity={displayResult?.disease_level}
+      />
+      <AssessmentGenerationOverlay
+        isOpen={showGeneratingOverlay}
+        onClose={() => setShowGeneratingOverlay(false)}
+        scanId={savedRecordId}
+        assessFn={assessScan}
+        onSuccess={handleAssessmentSuccess}
+        scanContext={{ disease: displayResult?.diagnosis, severity: displayResult?.disease_level }}
+      />
     </div>
   );
 }
