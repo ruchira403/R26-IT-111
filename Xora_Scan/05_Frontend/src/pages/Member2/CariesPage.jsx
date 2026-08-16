@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
   Upload,
@@ -20,6 +20,7 @@ import {
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { usePage } from "../../context/PageContext";
+import { getStoredToken } from '../../auth/useAuth';
 
 const ACCEPTED_FORMATS = "image/jpeg, image/png, image/webp";
 
@@ -45,6 +46,12 @@ export default function CariesPage() {
   const [steps, setSteps] = useState({
     loading: "idle", inference: "idle", postprocess: "idle",
   });
+  const [pageLoading, setPageLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setPageLoading(false), 1500);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // NEW STATES FOR DATABASE SAVING 
   const [saveLoading, setSaveLoading] = useState(false);
@@ -168,7 +175,10 @@ export default function CariesPage() {
 
       console.log("Sending updated payload to Node.js backend:", payload);
 
-      const response = await axios.post("http://localhost:8000/api/save-diagnosis", payload);
+      const token = getStoredToken();
+      const response = await axios.post("http://localhost:8000/api/save-diagnosis", payload, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
       if (response.data.success || response.data.status === "Success") {
         setSaveSuccess(true);
@@ -204,13 +214,44 @@ export default function CariesPage() {
     return "text-emerald-600";
   };
 
-  // UI 
+  // Are we showing a fresh upload UI (no passed data, or user chose to re-upload)?
+  const showUploadPanel = !hasPassedResult || selectedFile;
+
+  // ── UI ───────────────────────────────────────────────────────────────────────
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 flex flex-col items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative w-20 h-20">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-brand via-indigo-500 to-brand opacity-75 blur-md animate-pulse" />
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-brand border-r-indigo-500 animate-spin" />
+            <div className="absolute inset-1 rounded-full border-2 border-slate-100/30" />
+          </div>
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-slate-800">Initializing Disease Analysis</h2>
+            <p className="text-sm text-slate-500 mt-2">Loading diagnostic engine...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  // UI
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans transition-colors duration-300">
       <Header />
 
       <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8">
+        {loading && (
+          <div className="fixed bottom-6 right-6 z-50">
+            <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center shadow-lg">
+              <div className="relative w-6 h-6">
+                <div className="absolute inset-0 rounded-full border-2 border-slate-100" />
+                <div className="absolute inset-0 rounded-full border-2 border-t-brand border-r-indigo-400 animate-spin" />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Page Title Bar */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-200">

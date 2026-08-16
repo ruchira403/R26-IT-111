@@ -10,6 +10,7 @@ exports.saveCariesDiagnosis = async (req, res) => {
     console.log("📥 Incoming Request Body:", JSON.stringify(req.body, null, 2));
 
     const { image_path, quality_score, confidence_score, exposure, is_blurred, diseases } = req.body;
+    const userId = req.user && req.user.userId ? req.user.userId : null;
 
     // Get a client to start a PostgreSQL transaction
     const client = await pool.connect();
@@ -20,8 +21,8 @@ exports.saveCariesDiagnosis = async (req, res) => {
 
         // 1. Insert main data into 'dental_records' table and get the auto-generated ID
         const recordQuery = `
-            INSERT INTO dental_records (image_path, quality_score, confidence_score, exposure, is_blurred)
-            VALUES ($1, $2, $3, $4, $5) RETURNING id;
+            INSERT INTO dental_records (user_id, image_path, quality_score, confidence_score, exposure, is_blurred)
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;
         `;
         
        // Set default value (0.0 or true/false) if score is not provided
@@ -30,7 +31,7 @@ exports.saveCariesDiagnosis = async (req, res) => {
         const exp = exposure || 'Normal';
         const blurred = is_blurred !== undefined ? is_blurred : false;
 
-        const recordValues = [image_path || 'No Path', qScore, cScore, exp, blurred];
+        const recordValues = [userId, image_path || 'No Path', qScore, cScore, exp, blurred];
         const recordResult = await client.query(recordQuery, recordValues);
         const newRecordId = recordResult.rows[0].id; // new Record ID 
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { PageProvider, usePage } from './context/PageContext';
 import Dashboard     from './pages/Dashboard';
 import ValidationPage from './pages/Member1/ValidationPage';
@@ -38,6 +38,13 @@ function App() {
         <Route path="/scan-history"                                    element={<ScanHistoryPage />} />
         <Route path="/scan-history/:scanId"                            element={<ScanDetailPage />} />
         <Route path="/scan-history/:scanId/assessment/:assessmentId"   element={<AssessmentReportPage />} />
+
+        {/* Direct URL access to member pages, in addition to PageContext switching */}
+        <Route path="/member1/validation" element={<ValidationPage />} />
+        <Route path="/validation"         element={<ValidationPage />} />
+        <Route path="/caries"             element={<CariesPage />} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </PageProvider>
   );

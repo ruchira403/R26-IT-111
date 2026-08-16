@@ -1,5 +1,5 @@
 /**
- * 
+ *
  * All auth-related API calls
  * Uses axios (already in project dependencies).
  */
@@ -33,12 +33,12 @@ export async function login(email, password) {
 
 /**
  * Get the currently authenticated user's profile.
- * @param {string} token - Bearer access token
+ * @param {string} [token] - Bearer access token; falls back to the stored token if omitted
  */
 export async function getMe(token) {
-  const res = await authClient.get('/api/auth/me', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const t = token || (typeof localStorage !== 'undefined' ? localStorage.getItem('xorascan_access_token') : null);
+  const headers = t ? { Authorization: `Bearer ${t}` } : {};
+  const res = await authClient.get('/api/auth/me', { headers });
   return res.data;
 }
 

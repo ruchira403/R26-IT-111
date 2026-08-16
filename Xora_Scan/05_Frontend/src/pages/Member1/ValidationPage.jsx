@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2"; 
 import {
@@ -14,12 +14,17 @@ import {
     FileText,
     Sparkles
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { useAuth } from "../../auth/useAuth";
 import { usePage } from "../../context/PageContext";
 
 export default function ValidationPage() {
+    const navigate = useNavigate();
+    const { isLoggedIn } = useAuth();
     const { navigateTo } = usePage();
+
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -33,6 +38,16 @@ export default function ValidationPage() {
         metrics: 'idle',
         pathology: 'idle'
     });
+
+    useEffect(() => {
+        if (!isLoggedIn) {
+            navigate('/login', { replace: true });
+        }
+    }, [isLoggedIn, navigate]);
+
+    if (!isLoggedIn) {
+        return null;
+    }
 
     // 1. Handle File Selection & Local Preview
     const handleFileChange = (e) => {
@@ -190,7 +205,7 @@ export default function ValidationPage() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-200">
                     <div>
                         <button
-                            onClick={() => navigateTo('dashboard')}
+                            onClick={() => { navigateTo('dashboard'); navigate('/'); }}
                             className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-brand mb-3 transition-colors group cursor-pointer"
                         >
                             <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
@@ -356,7 +371,10 @@ export default function ValidationPage() {
                                         <div className="text-xs text-slate-500 mt-0.5">Proceed to Stage 2: Dental Caries Pathology Analysis.</div>
                                     </div>
                                     <button
-                                        onClick={() => navigateTo('caries', { backendData, originalPreviewUrl: previewUrl })}
+                                        onClick={() => {
+                                            navigateTo('caries', { backendData, originalPreviewUrl: previewUrl });
+                                            navigate('/caries');
+                                        }}
                                         className="px-6 py-3 bg-brand text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer"
                                     >
                                         <Sparkles className="w-4 h-4" /> Continue to Caries Analysis
