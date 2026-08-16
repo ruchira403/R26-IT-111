@@ -1,1 +1,1 @@
-export const AUTH_API_BASE_URL = import.meta.env.VITE_HEALTH_BACKEND_URL || 'http://localhost:8000';
+export const AUTH_API_BASE_URL = import.meta.env.VITE_HEALTH_BACKEND_URL || 'http://localhost:8081';

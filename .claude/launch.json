@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd 'Xora_Scan/05_Frontend' && npm run dev"],
+      "port": 5173
+    },
+    {
+      "name": "dental-scan-node-backend",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd 'Xora_Scan/04_Backend' && node server.js"],
+      "port": 8000
+    },
+    {
+      "name": "dental-scan-model-backend",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd 'Xora_Scan/04_Backend' && source venv/bin/activate && python app.py"],
+      "port": 5000
+    },
+    {
+      "name": "health-advisor-backend",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd 'Xora_Scan/06_Health_Advisor_Backend_Service' && npm run dev"],
+      "port": 8081
+    }
+  ]
+}

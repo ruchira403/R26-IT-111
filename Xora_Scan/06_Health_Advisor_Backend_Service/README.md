@@ -35,7 +35,7 @@ prisma/
 
 ```env
 DATABASE_URL=
-PORT=8000
+PORT=8081
 JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
 REDIS_URL=
@@ -74,7 +74,7 @@ npm run dev
 Local base URL:
 
 ```txt
-http://localhost:8000
+http://localhost:8081
 ```
 
 Deployed base URL placeholder:
@@ -108,7 +108,7 @@ They can either verify the JWT using the shared access-token secret, or call `GE
 Creates a user and health profile in one Prisma transaction.
 
 ```bash
-curl -X POST http://localhost:8000/api/auth/register \
+curl -X POST http://localhost:8081/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -138,7 +138,7 @@ curl -X POST http://localhost:8000/api/auth/register \
 ### POST /api/auth/login
 
 ```bash
-curl -X POST http://localhost:8000/api/auth/login \
+curl -X POST http://localhost:8081/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"user@example.com","password":"Password123"}'
 ```
@@ -148,7 +148,7 @@ Returns the user, `accessToken`, and `refreshToken`.
 ### POST /api/auth/logout
 
 ```bash
-curl -X POST http://localhost:8000/api/auth/logout \
+curl -X POST http://localhost:8081/api/auth/logout \
   -H "Authorization: Bearer ACCESS_TOKEN"
 ```
 
@@ -157,7 +157,7 @@ Deletes the active Redis session.
 ### GET /api/auth/me
 
 ```bash
-curl http://localhost:8000/api/auth/me \
+curl http://localhost:8081/api/auth/me \
   -H "Authorization: Bearer ACCESS_TOKEN"
 ```
 
@@ -166,14 +166,14 @@ Returns the logged-in user and `healthProfile` if available.
 ### GET /api/health-profile/me
 
 ```bash
-curl http://localhost:8000/api/health-profile/me \
+curl http://localhost:8081/api/health-profile/me \
   -H "Authorization: Bearer ACCESS_TOKEN"
 ```
 
 ### POST /api/health-profile
 
 ```bash
-curl -X POST http://localhost:8000/api/health-profile \
+curl -X POST http://localhost:8081/api/health-profile \
   -H "Authorization: Bearer ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -199,7 +199,7 @@ curl -X POST http://localhost:8000/api/health-profile \
 ### PUT /api/health-profile/me
 
 ```bash
-curl -X PUT http://localhost:8000/api/health-profile/me \
+curl -X PUT http://localhost:8081/api/health-profile/me \
   -H "Authorization: Bearer ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"smoking_status":"medium","overall_oral_hygiene_level":"moderate"}'
@@ -208,7 +208,7 @@ curl -X PUT http://localhost:8000/api/health-profile/me \
 ### DELETE /api/health-profile/me
 
 ```bash
-curl -X DELETE http://localhost:8000/api/health-profile/me \
+curl -X DELETE http://localhost:8081/api/health-profile/me \
   -H "Authorization: Bearer ACCESS_TOKEN"
 ```
 
