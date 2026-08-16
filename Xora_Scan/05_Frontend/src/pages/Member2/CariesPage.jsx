@@ -21,6 +21,7 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { usePage } from "../../context/PageContext";
 import { getStoredToken } from '../../auth/useAuth';
+import { CARIES_API_BASE_URL, MODEL_API_BASE_URL } from '../../auth/authConfig';
 
 const ACCEPTED_FORMATS = "image/jpeg, image/png, image/webp";
 
@@ -116,7 +117,7 @@ export default function CariesPage() {
 
     try {
       const [apiResponse] = await Promise.all([
-        axios.post("http://127.0.0.1:5000/caries", formData, {
+        axios.post(`${MODEL_API_BASE_URL}/caries`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         }),
         runStepsAnimation(),
@@ -143,7 +144,7 @@ export default function CariesPage() {
         return next;
       });
       setNetworkError(
-        "Backend connection failed. Please ensure the Flask server is running on http://127.0.0.1:5000."
+        `Backend connection failed. Please ensure the Flask server is running on ${MODEL_API_BASE_URL}.`
       );
     } finally {
       loading(false);
@@ -176,7 +177,7 @@ export default function CariesPage() {
       console.log("Sending updated payload to Node.js backend:", payload);
 
       const token = getStoredToken();
-      const response = await axios.post("http://localhost:8000/api/save-diagnosis", payload, {
+      const response = await axios.post(`${CARIES_API_BASE_URL}/save-diagnosis`, payload, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
@@ -186,7 +187,7 @@ export default function CariesPage() {
       }
     } catch (err) {
       console.error("Error saving to database:", err);
-      alert("❌ Failed to save data. Please ensure the Node.js backend is running on Port 8000.");
+      alert(`❌ Failed to save data. Please ensure the Node.js backend is running at ${CARIES_API_BASE_URL}.`);
     } finally {
       setSaveLoading(false);
     }

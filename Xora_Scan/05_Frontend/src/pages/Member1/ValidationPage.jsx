@@ -19,6 +19,7 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../auth/useAuth";
 import { usePage } from "../../context/PageContext";
+import { MODEL_API_BASE_URL } from "../../auth/authConfig";
 
 export default function ValidationPage() {
     const navigate = useNavigate();
@@ -122,7 +123,7 @@ export default function ValidationPage() {
 
         try {
             // call Backend API 
-            const apiResponse = await axios.post("http://127.0.0.1:5000/validate", formData, {
+            const apiResponse = await axios.post(`${MODEL_API_BASE_URL}/validate`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
