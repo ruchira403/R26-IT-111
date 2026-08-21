@@ -188,6 +188,15 @@ export default function AssessmentReportPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Browsers suggest document.title as the filename for "Print > Save as PDF",
+  // so give the tab a report-specific title while this page is open.
+  useEffect(() => {
+    if (!assessment?.code) return;
+    const previousTitle = document.title;
+    document.title = `Report ${assessment.code}`;
+    return () => { document.title = previousTitle; };
+  }, [assessment?.code]);
+
   /* ── Fetch assessment if not in route state ──────────────────────── */
   const fetchAssessment = useCallback(async () => {
     if (assessment) return;
