@@ -10,23 +10,8 @@ import {
 import Header from '../../components/Header';
 import { getStoredToken } from '../../auth/useAuth';
 import { assessScan } from '../../auth/scanApi';
-
-/* ── Helpers ────────────────────────────────────────────────────────── */
-const formatDate = (iso) => {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-};
-
-/** Convert raw enum-like values to readable text */
-const humanize = (val) => {
-  if (!val || val === '—') return '—';
-  return val
-    .replace(/[-_]/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-};
-
-/** Convert booleans to Yes/No */
-const yesNo = (val) => (val ? 'Yes' : 'No');
+import PrintableAssessmentReport from './PrintableAssessmentReport';
+import { formatDate, humanize, yesNo } from './reportUtils';
 
 /** Risk level color classes */
 const riskLevelColor = (level) => {
@@ -312,15 +297,17 @@ export default function AssessmentReportPage() {
     { id: 'safety', label: 'Safety & Info', icon: ShieldCheck, show: true },
   ].filter((t) => t.show);
 
-  const panelClass = (id) => `${activeTab === id ? 'block' : 'hidden'} print:block space-y-6`;
+  const panelClass = (id) => `${activeTab === id ? 'block' : 'hidden'} space-y-6`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-white flex flex-col">
       <Header />
 
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-brand/8 to-indigo-100/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-brand/8 to-indigo-100/10 rounded-full blur-3xl pointer-events-none -z-10 print:hidden" />
 
-      <div className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 w-full space-y-6">
+      {/* Interactive on-screen dashboard — swapped out for a clean printable
+          layout below when the user prints / saves as PDF. */}
+      <div className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 w-full space-y-6 print:hidden">
 
         {/* Back + actions */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden">
@@ -658,6 +645,24 @@ export default function AssessmentReportPage() {
         {/* Bottom spacer */}
         <div className="h-4" />
       </div>
+
+      {/* Clean, clinician-facing report — hidden on screen, shown only when
+          printing / saving as PDF (window.print() via the button above). */}
+      <PrintableAssessmentReport
+        assessment={assessment}
+        riskReport={riskReport}
+        riskScore={riskScore}
+        riskLevel={riskLevel}
+        urgency={urgency}
+        carePlan={carePlan}
+        carePlanGroups={carePlanGroups}
+        postValidation={postValidation}
+        safetyNotes={safetyNotes}
+        inconsistencies={inconsistencies}
+        ethics={ethics}
+        inputSnapshot={inputSnapshot}
+        sourceLabel={sourceLabel}
+      />
 
       {/* ── Back to top ──────────────────────────────────────────────── */}
       {showTop && (

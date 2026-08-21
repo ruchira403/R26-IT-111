@@ -102,6 +102,20 @@ html, body {
   border-radius: 0.75rem;
 }
 
+/* ── Printable assessment report (PDF export) ──────────────── */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 16mm;
+  }
+  html, body {
+    background: #ffffff;
+  }
+  .print-avoid-break {
+    break-inside: avoid;
+  }
+}
+
 /* Respect reduced-motion preference */
 @media (prefers-reduced-motion: reduce) {
   .scan-card-hover { transition: none; }
