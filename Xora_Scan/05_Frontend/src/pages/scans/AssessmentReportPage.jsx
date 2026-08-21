@@ -152,7 +152,7 @@ function QuickFact({ icon: Icon, label, value, valueClass = 'text-slate-800' }) 
       </div>
       <div className="min-w-0">
         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{label}</p>
-        <p className={`text-sm font-bold truncate ${valueClass}`}>{value}</p>
+        <p className={`text-sm font-bold break-words ${valueClass}`}>{value}</p>
       </div>
     </div>
   );
@@ -381,14 +381,6 @@ export default function AssessmentReportPage() {
             </div>
           </div>
         </section>
-
-        {/* Main disclaimer banner */}
-        {ethics.main_disclaimer && (
-          <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs leading-relaxed">
-            <Info className="w-4 h-4 shrink-0 mt-0.5" />
-            <p>{ethics.main_disclaimer}</p>
-          </div>
-        )}
 
         {/* ── Tab bar ──────────────────────────────────────────────────── */}
         <div className="flex gap-2 overflow-x-auto pb-1 print:hidden" role="tablist">

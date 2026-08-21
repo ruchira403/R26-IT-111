@@ -4,7 +4,7 @@ import { Brain, HeartPulse, ShieldCheck, Clock, Sparkles, ArrowRight, X, Gauge }
 const FEATURES = [
   {
     icon: Brain,
-    title: 'AI-Powered Risk Analysis',
+    title: 'AI-ML Powered Risk Analysis',
     desc: 'Your detected condition is combined with your full health profile to model your personal dental risk.',
   },
   {
@@ -68,7 +68,7 @@ export default function RiskAssessmentIntroModal({ isOpen, onClose, onStart, dis
             Ready for Your Risk Assessment?
           </h2>
           <p className="relative text-sm text-white/80 mt-2 leading-relaxed max-w-md">
-            Turn this scan into a personalised dental risk report — powered by our AI assessment pipeline.
+            Turn this scan into a personalised dental risk report and personalised care plan — powered by our AI-ML assessment pipeline.
           </p>
 
           {disease && (
