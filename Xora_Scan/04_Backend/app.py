@@ -6,9 +6,11 @@ from flask_cors import CORS
 # Import main pipeline modules from the 'modules' folder
 from modules.app import run_image_validation_pipeline
 from modules.predict_with_levels import run_caries_detection
+from modules.longitudinal.routes import ruchira_blueprint
 
 app = Flask(__name__)
 CORS(app)
+app.register_blueprint(ruchira_blueprint)
 
 # Upload Folder 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -43,10 +45,10 @@ def master_pipeline():
     if img_cv2 is None:
         return jsonify({"error": "Invalid image file"}), 400
 
-    # STEP 1: RUN MEMBER 01 - IMAGE VALIDATION & ORIENTATION PIPELINE
+    # IMAGE VALIDATION & ORIENTATION PIPELINE
     val_report, fixed_img = run_image_validation_pipeline(img_cv2)
 
-    # If image is rejected, stop caries detection and send response immediately
+    # If image is rejected, stop caries detection 
     if val_report["status"] == "Rejected":
         return jsonify({
             "validation_results": val_report,
@@ -57,16 +59,16 @@ def master_pipeline():
             "message": "Process halted due to validation failure."
         }), 200
 
-    # STEP 2: RUN MEMBER 02 - CARIES DETECTION PIPELINE (True Success Only)
+    # CARIES DETECTION PIPELINE 
 
     caries_report = run_caries_detection(fixed_img)
 
-    #  Save the final processed image for display on the frontend
+    #  Save the fixed image for display on the frontend
     fixed_filename = "fixed_" + file.filename
     fixed_image_path = os.path.join(app.config['UPLOAD_FOLDER'], fixed_filename)
     cv2.imwrite(fixed_image_path, fixed_img)
 
-    # STEP 3: COMBINED SUCCESS RESPONSE
+    # COMBINED SUCCESS RESPONSE
     return jsonify({
         "status": "Success",
         "fixed_image_url": f"http://127.0.0.1:5000/uploads/{fixed_filename}",

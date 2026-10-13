@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-// 💡 react-router-dom එකෙන් useNavigate අයින් කලා (මොකද ඔයාලා පාවිච්චි කරන්නේ PageContext නිසා)
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+// 💡 react-router-dom 
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import homeImage from '../assets/home image.jpg';
 import { usePage } from '../context/PageContext';
 import {
   Play,
@@ -24,6 +25,26 @@ import {
 export default function Dashboard() {
   // const { changePage } = usePage();
   const { navigateTo } = usePage();
+
+  // --- Scroll Reveal via IntersectionObserver ---
+  const revealContainerRef = useRef(null);
+  useEffect(() => {
+    const elements = document.querySelectorAll('[data-reveal]');
+    if (!elements.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   // --- Simulation state for pre-processing ---
   const [scanStep, setScanStep] = useState(0); // 0: idle, 1-4: checking steps, 5: success
@@ -204,87 +225,183 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
 
-      {/* Reusable Header */}
-      <Header />
+      {/* Reusable Header (Dark Mode for Dashboard) */}
+      <Header dark={true} />
 
       <main className="flex-grow">
 
         {/* ========================================================================= */}
-        {/* SECTION 1: HERO & PRE-PROCESSING HUB */}
+        {/* SECTION 1: HERO (DESIGN MATCHED TO IMAGE) */}
         {/* ========================================================================= */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-white via-blue-50/20 to-white py-16 sm:py-24 border-b border-slate-100">
-          {/* Subtle Background Gradients */}
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-blue-200/20 to-indigo-100/10 rounded-full blur-3xl -z-10"></div>
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-gradient-to-tr from-brand/5 to-cyan-100/10 rounded-full blur-3xl -z-10"></div>
+        <section 
+          className="relative min-h-[92vh] flex flex-col justify-between overflow-hidden py-20 lg:py-24 border-b border-slate-100 bg-cover bg-center bg-no-repeat text-white"
+          style={{ backgroundImage: `url("${homeImage}")` }}
+        >
+          {/* Dark Overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-900/40 to-transparent pointer-events-none -z-10"></div>
+          <div className="absolute inset-0 bg-black/10 pointer-events-none -z-10"></div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-grow flex items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center w-full">
 
-              {/* Left Column: Hero copy */}
+              {/* Left Column: Hero Copy */}
               <div className="lg:col-span-7 space-y-6 sm:space-y-8 text-left">
-
-                {/* AI Badge */}
-                <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-xs font-semibold text-brand tracking-wide">
-                  <span className="w-2 h-2 rounded-full bg-brand animate-ping"></span>
-                  <span>AI-POWERED DIAGNOSTICS</span>
-                </div>
-
                 {/* Headline */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
-                  Precision Starts with <br />
-                  <span className="bg-gradient-to-r from-brand to-indigo-600 bg-clip-text text-transparent">Quality.</span>
+                <h1 className="hero-fade-up text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.12]">
+                  Family-Friendly <br />
+                  Dental Care
                 </h1>
 
                 {/* Subhead */}
-                <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
-                  DentiScan AI automatically validates dental X-ray integrity, ensuring optimal sharpness, contrast, and resolution before advanced diagnostic analysis begins.
+                <p className="hero-fade-up-d1 text-base sm:text-lg text-white/80 max-w-xl leading-relaxed">
+                  Permanent natural-looking solutions to replace missing teeth and restore confident healthy smiles.
                 </p>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+                {/* Action Button: Start New Scan (with image-like styles) */}
+                <div className="hero-fade-up-d2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
                   <button
                     onClick={() => navigateTo('validation')}
-                    className="relative overflow-hidden px-8 py-4 text-center text-base font-semibold text-white bg-brand hover:bg-brand-dark rounded-xl shadow-lg shadow-brand/20 hover:shadow-brand/35 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 group"
+                    className="inline-flex items-center gap-3 pl-6 pr-2 py-2 text-slate-900 bg-white hover:bg-slate-100 rounded-full font-bold transition-all duration-200 cursor-pointer shadow-lg group self-start"
                   >
-                    <span className="relative z-10 flex items-center justify-center gap-2">
-                      Start New Scan
+                    <span>Start New Scan</span>
+                    <span className="w-10 h-10 rounded-full bg-brand text-white flex items-center justify-center transition-transform group-hover:translate-x-1">
+                      <ArrowRight className="w-5 h-5" />
                     </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </button>
-
-                  <button
-                    onClick={() => setShowDemoModal(true)}
-                    className="flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl text-base font-semibold text-slate-700 hover:text-slate-950 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-sm transition-all duration-200"
-                  >
-                    <Play className="w-4 h-4 fill-current text-slate-600" />
-                    <span>Watch Demo</span>
                   </button>
                 </div>
 
-                {/* Badges/Certifications */}
-                <div className="flex flex-wrap gap-x-8 gap-y-4 pt-6 border-t border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-brand" />
-                    <span>FDA Cleared</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-brand" />
-                    <span>ISO 13485</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-brand" />
-                    <span>HIPAA Compliant</span>
+                {/* Floating Doctor Card (left-aligned) */}
+                <div className="hero-fade-up-d3 pt-6">
+                  <div className="float-bounce bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-3xl max-w-[280px] shadow-2xl flex flex-col gap-3">
+                    <div className="relative aspect-[1.8/1] rounded-2xl overflow-hidden bg-slate-800">
+                      <img src={homeImage} className="w-full h-full object-cover scale-150 origin-bottom" alt="Dentistry" />
+                      <div className="absolute inset-0 bg-slate-900/10 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white border border-white/30">
+                          <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-1 text-left">
+                      <p className="text-xs font-semibold text-white leading-snug">
+                        Restore natural healthy confident dental growth.
+                      </p>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1">
+                          ★ 4.9 <span className="text-white/60">[Rating]</span>
+                        </span>
+                        <span className="text-white/40 text-[10px]">↗</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
               </div>
 
-              {/* Right Column: Pre-processing Hub Card */}
-              <div className="lg:col-span-5 flex justify-center">
-                <div className="w-full max-w-md bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/40 p-6 sm:p-8 space-y-6 sm:space-y-8 transform hover:scale-[1.01] transition-transform duration-300">
+              {/* Right Column: Service Pills aligned bottom right */}
+              <div className="hero-fade-left lg:col-span-5 flex flex-col justify-end lg:h-full pt-12 lg:pt-0">
+                <div className="flex flex-wrap gap-2.5 justify-start lg:justify-end lg:max-w-md lg:ml-auto self-start lg:self-end">
+                  <span className="px-5 py-2.5 rounded-full text-xs font-bold bg-white text-slate-900 shadow">
+                    Dental Checkup
+                  </span>
+                  <span className="px-5 py-2.5 rounded-full text-xs font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20">
+                    Teeth Cleaning
+                  </span>
+                  <span className="px-5 py-2.5 rounded-full text-xs font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20">
+                    Tooth Filling
+                  </span>
+                  <span className="px-5 py-2.5 rounded-full text-xs font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20">
+                    Gum Treatment
+                  </span>
+                  <span className="px-5 py-2.5 rounded-full text-xs font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20">
+                    Retainers
+                  </span>
+                </div>
+              </div>
 
+            </div>
+          </div>
+
+          {/* Bottom Info Strip */}
+          <div className="hero-fade-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-16 mt-8">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-white/60 border-t border-white/10 pt-6">
+              <span>Your Teeth Our Science</span>
+              <div className="flex items-center gap-2">
+                <span>Preview</span>
+                <span className="font-bold text-white">01 / 08</span>
+                <span className="cursor-pointer hover:text-white transition-colors">Next</span>
+              </div>
+              <span className="cursor-pointer hover:text-white transition-colors">Scroll for More</span>
+            </div>
+          </div>
+
+        </section>
+
+        {/* ========================================================================= */}
+        {/* PROGRESS STRIP BELOW HERO */}
+        {/* ========================================================================= */}
+        <div className="bg-white border-b border-slate-200 py-5 overflow-x-auto hide-scrollbar">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center min-w-[768px]">
+            {/* Item 1 */}
+            <div className="flex items-center gap-4 flex-1 justify-center">
+              <span className="text-xs font-bold text-slate-800 tracking-wide uppercase">Smile Assessment</span>
+              <div className="h-3 w-[70px] bg-[repeating-linear-gradient(90deg,#cbd5e1,#cbd5e1_1px,transparent_1px,transparent_6px)]"></div>
+            </div>
+            {/* Item 2 */}
+            <div className="flex items-center gap-4 flex-1 justify-center">
+              <span className="text-xs font-bold text-slate-400 tracking-wide uppercase">Care Planning</span>
+              <div className="h-3 w-[70px] bg-[repeating-linear-gradient(90deg,#cbd5e1,#cbd5e1_1px,transparent_1px,transparent_6px)]"></div>
+            </div>
+            {/* Item 3 */}
+            <div className="flex items-center gap-4 flex-1 justify-center">
+              <span className="text-xs font-bold text-slate-400 tracking-wide uppercase">Treatment Process</span>
+              <div className="h-3 w-[70px] bg-[repeating-linear-gradient(90deg,#cbd5e1,#cbd5e1_1px,transparent_1px,transparent_6px)]"></div>
+            </div>
+            {/* Item 4 */}
+            <div className="flex items-center gap-4 flex-1 justify-center">
+              <span className="text-xs font-bold text-slate-400 tracking-wide uppercase">Dental Maintenance</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* SECTION 1.5: PRE-PROCESSING HUB (RELOCATED SIMULATOR) */}
+        {/* ========================================================================= */}
+        <section className="bg-slate-50 border-b border-slate-200 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              
+              <div className="lg:col-span-6 space-y-4 text-left" data-reveal="right" data-reveal-delay="1">
+                <span className="text-xs font-bold text-brand uppercase tracking-wider">Image Quality Verification</span>
+                <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                  X-Ray Pre-processing & Diagnostic Hub
+                </h2>
+                <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                  Before rendering AI annotations and anomaly detections in the section below, use the Pre-processing simulator to validate the sharpness, contrast, and resolution parameters of the dental X-ray.
+                </p>
+                <div className="pt-2 flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-brand" />
+                    <span>FDA Cleared</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-brand" />
+                    <span>ISO 13485</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-brand" />
+                    <span>HIPAA Compliant</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-6 flex justify-center" data-reveal="left" data-reveal-delay="2">
+                <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200/60 shadow-xl p-6 sm:p-8 space-y-6 transform hover:scale-[1.01] transition-transform duration-300">
+                  
                   {/* Preprocessing State Header */}
-                  <div className="relative overflow-hidden rounded-2xl bg-[#E6F0FF] p-5 border border-brand/10 group">
+                  <div 
+                    onClick={handleStartScan}
+                    className="relative overflow-hidden rounded-2xl bg-brand/10 hover:bg-brand/15 p-5 border border-brand/20 group cursor-pointer transition-all duration-300 animate-pulse"
+                  >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full blur-xl -z-10"></div>
 
                     <div className="flex items-center space-x-4">
@@ -298,11 +415,11 @@ export default function Dashboard() {
                         )}
                       </div>
 
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 text-left">
                         {scanStep === 0 && (
                           <>
                             <h3 className="text-sm font-bold text-slate-800">Scanner Ready</h3>
-                            <p className="text-xs text-slate-500 truncate mt-0.5">Upload panoramic X-ray to diagnose</p>
+                            <p className="text-xs text-slate-500 truncate mt-0.5">Click here to start panoramic X-ray diagnostics</p>
                           </>
                         )}
                         {scanning && (
@@ -344,7 +461,7 @@ export default function Dashboard() {
                       {scanStep > 0 && (
                         <button
                           onClick={handleResetScan}
-                          className="text-xs font-semibold text-slate-500 hover:text-brand flex items-center gap-1 transition-colors"
+                          className="text-xs font-semibold text-slate-500 hover:text-brand flex items-center gap-1 transition-colors animate-fade-in"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
                           <span>Reset</span>
@@ -460,7 +577,7 @@ export default function Dashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
             {/* Header copy */}
-            <div className="text-center max-w-3xl mx-auto space-y-4 mb-16 sm:mb-20">
+            <div className="text-center max-w-3xl mx-auto space-y-4 mb-16 sm:mb-20" data-reveal="up">
               <span className="text-xs font-bold tracking-wider text-brand uppercase">AI Diagnostic Engine</span>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
                 See What the Eye Misses.
@@ -474,7 +591,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
 
               {/* Left Column: Dental Clinic Bounding Box Visualizer */}
-              <div className="lg:col-span-7 flex flex-col justify-between">
+              <div className="lg:col-span-7 flex flex-col justify-between" data-reveal="right" data-reveal-delay="1">
                 <div className="relative w-full aspect-[1.8/1] rounded-3xl bg-slate-950 border border-white/5 overflow-hidden shadow-2xl group flex items-center justify-center">
 
                   {/* Custom CSS Stylized Dental Clinic Image/Mockup */}
@@ -634,7 +751,7 @@ export default function Dashboard() {
               </div>
 
               {/* Right Column: Case Analysis Card */}
-              <div className="lg:col-span-5 flex items-stretch">
+              <div className="lg:col-span-5 flex items-stretch" data-reveal="left" data-reveal-delay="2">
                 <div className="w-full bg-white rounded-3xl p-6 sm:p-8 flex flex-col justify-between text-slate-800 border border-slate-100 shadow-xl transition-all duration-300">
 
                   {/* Title Area */}
@@ -748,7 +865,7 @@ export default function Dashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
             {/* Header copy */}
-            <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
+            <div className="text-center max-w-3xl mx-auto space-y-4 mb-12" data-reveal="up">
               <span className="text-xs font-bold tracking-wider text-brand uppercase">Patient Journey</span>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
                 Track Every Visit. See Every Change.
@@ -756,7 +873,7 @@ export default function Dashboard() {
             </div>
 
             {/* Horizontal Timeline Selector */}
-            <div className="flex justify-center mb-16 overflow-x-auto py-4 px-2 hide-scrollbar">
+            <div className="flex justify-center mb-16 overflow-x-auto py-4 px-2 hide-scrollbar" data-reveal="up" data-reveal-delay="2">
               <div className="flex items-center space-x-4">
                 {timelineDates.map((item, idx) => (
                   <div key={idx} className="flex items-center">
@@ -797,7 +914,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
 
               {/* Left Column: Visual Progression Slider (2024 vs 2026) */}
-              <div className="lg:col-span-7 flex flex-col justify-between">
+              <div className="lg:col-span-7 flex flex-col justify-between" data-reveal="right" data-reveal-delay="1">
                 <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xl flex flex-col justify-between h-full">
 
                   <div className="flex justify-between items-center mb-6">
@@ -909,7 +1026,7 @@ export default function Dashboard() {
               </div>
 
               {/* Right Column: Alerts & Bone Density line chart */}
-              <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
+              <div className="lg:col-span-5 flex flex-col justify-between space-y-6" data-reveal="left" data-reveal-delay="2">
 
                 {/* Alert Box */}
                 <div className="p-5 rounded-2xl bg-rose-50 border border-rose-100 flex items-start space-x-4">

@@ -1,7 +1,5 @@
-
-// export const AUTH_API_BASE_URL = "http://localhost:8000";
-
-// src/auth/authConfig.js
-
-// 💡 කලින් තිබුණු URL එක වෙනුවට අපේ .env එකේ ලින්ක් එක කෙලින්ම මෙතනට දෙන්න 🚀
-export const AUTH_API_BASE_URL = import.meta.env.VITE_HEALTH_BACKEND_URL || 'http://localhost:5000';
+// Single source of truth for every backend base URL this app talks to.
+// Override any of these via Xora_Scan/05_Frontend/.env — never hardcode a host/port in a component.
+export const AUTH_API_BASE_URL = import.meta.env.VITE_HEALTH_BACKEND_URL || 'http://localhost:8081';
+export const CARIES_API_BASE_URL = import.meta.env.VITE_CARIES_BACKEND_URL || 'http://localhost:8000/api';
+export const MODEL_API_BASE_URL = import.meta.env.VITE_MODEL_BACKEND_URL || 'http://127.0.0.1:5000';
