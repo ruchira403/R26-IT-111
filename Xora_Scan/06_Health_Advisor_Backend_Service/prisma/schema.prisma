@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int                @id @default(autoincrement())
+  email            String             @unique @db.VarChar(255)
+  passwordHash     String             @map("password_hash")
+  role             String             @default("USER") @db.VarChar(50)
+  isActive         Boolean            @default(true) @map("is_active")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @default(now()) @updatedAt @map("updated_at")
+  health_profile   Json?
+  healthProfile    HealthProfile?
+  risk_assessments risk_assessments[]
+
+  @@map("users")
+}
+
+model HealthProfile {
+  id                         Int      @id @default(autoincrement())
+  userId                     Int      @unique @map("user_id")
+  age                        Int
+  numberOfTeeth              Int      @map("number_of_teeth")
+  numberOfMissingTeeth       Int      @map("number_of_missing_teeth")
+  isPrimaryTeeth             Boolean  @default(false) @map("is_primary_teeth")
+  smokingStatus              String   @map("smoking_status") @db.VarChar(20)
+  alcoholUsage               String   @map("alcohol_usage") @db.VarChar(20)
+  sugarUsage                 String   @map("sugar_usage") @db.VarChar(20)
+  brushingFrequency          Int      @map("brushing_frequency")
+  diabetesStatus             Boolean  @default(false) @map("diabetes_status")
+  pregnancyStatus            Boolean  @default(false) @map("pregnancy_status")
+  gumBleeding                Boolean  @default(false) @map("gum_bleeding")
+  toothSensitivity           Boolean  @default(false) @map("tooth_sensitivity")
+  calciumOrVitaminDeficiency Boolean  @default(false) @map("calcium_or_vitamin_deficiency")
+  numberOfFilledTeeth        Int      @default(0) @map("number_of_filled_teeth")
+  overallOralHygieneLevel    String   @map("overall_oral_hygiene_level") @db.VarChar(20)
+  preferredLanguage          String   @default("en") @map("preferred_language") @db.VarChar(10)
+  createdAt                  DateTime @default(now()) @map("created_at")
+  updatedAt                  DateTime @default(now()) @updatedAt @map("updated_at")
+  user                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("health_profiles")
+}
+
+model dental_records {
+  id                Int                 @id @default(autoincrement())
+  image_path        String              @db.VarChar(255)
+  quality_score     Float
+  confidence_score  Float
+  exposure          String?             @db.VarChar(50)
+  is_blurred        Boolean?
+  created_at        DateTime?           @default(now()) @db.Timestamp(6)
+  user_id           Int?
+  detected_diseases detected_diseases[]
+  risk_assessments  risk_assessments[]
+}
+
+model detected_diseases {
+  id               Int                @id @default(autoincrement())
+  record_id        Int?
+  disease_type     String             @db.VarChar(100)
+  severity_level   String?            @db.VarChar(50)
+  confidence       Float
+  created_at       DateTime?          @default(now()) @db.Timestamptz(6)
+  dental_records   dental_records?    @relation(fields: [record_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  risk_assessments risk_assessments[]
+}
+
+model risk_assessments {
+  id                  Int               @id @default(autoincrement())
+  code                String            @unique @db.VarChar(50)
+  user_id             Int
+  dental_record_id    Int
+  detected_disease_id Int
+  assessment_status   String            @default("SUCCESS") @db.VarChar(30)
+  input_snapshot      Json
+  assessment_result   Json
+  created_at          DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime          @default(now()) @db.Timestamptz(6)
+  dental_records      dental_records    @relation(fields: [dental_record_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  detected_diseases   detected_diseases @relation(fields: [detected_disease_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users               User              @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, dental_record_id, detected_disease_id], map: "risk_assessments_unique_detection")
+}
